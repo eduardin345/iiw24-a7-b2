@@ -1,0 +1,355 @@
+/* style.css */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Fonte mais moderna */
+    margin: 0; /* Remove margem padrão */
+    padding: 20px; /* Adiciona padding geral */
+    background-color: #eef2f7; /* Tom de azul/cinza claro */
+    color: #333;
+    line-height: 1.6; /* Melhora legibilidade */
+}
+
+h1, h2, h3 {
+    color: #2c3e50; /* Azul escuro */
+    margin-bottom: 15px; /* Espaçamento abaixo dos títulos */
+}
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 2.5em; /* Tamanho maior */
+    color: #3498db; /* Azul mais vibrante */
+}
+h2 {
+    font-size: 1.8em;
+    border-bottom: 2px solid #bdc3c7; /* Linha sutil abaixo de h2 */
+    padding-bottom: 5px;
+}
+h3 {
+    font-size: 1.4em;
+}
+
+button {
+    background-color: #3498db; /* Azul primário */
+    color: white;
+    padding: 12px 20px; /* Botões maiores */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 5px;
+    transition: background-color 0.3s ease, transform 0.1s ease; /* Adiciona transição de transform */
+    font-size: 1em; /* Tamanho da fonte do botão */
+}
+
+button:hover {
+    background-color: #2980b9; /* Azul um pouco mais escuro no hover */
+}
+
+button:active {
+     transform: scale(0.98); /* Efeito de clique */
+}
+
+/* Estilos para botões específicos */
+button.warning {
+    background-color: #e74c3c; /* Vermelho para remover/atenção */
+}
+button.warning:hover {
+    background-color: #c0392b;
+}
+
+button.small-warning {
+    background-color: #f39c12 !important; /* Laranja para cancelar/aviso menor */
+    color: white !important;
+    padding: 4px 10px !important;
+    font-size: 0.85em !important;
+    margin-left: 10px !important;
+}
+button.small-warning:hover {
+    background-color: #e67e22 !important;
+}
+
+
+input[type="text"],
+input[type="number"],
+input[type="datetime-local"], /* Mantido se usado em algum lugar, mas Flatpickr usa type="text" */
+select,
+textarea {
+    width: 100%; /* Usa 100% da largura */
+    padding: 12px; /* Mais padding interno */
+    margin-bottom: 15px; /* Mais espaço abaixo */
+    border: 1px solid #bdc3c7; /* Cinza claro */
+    border-radius: 4px;
+    box-sizing: border-box; /* Garante que padding não aumente a largura total */
+    font-size: 1em; /* Tamanho da fonte dos inputs */
+}
+/* Melhora aparência do select */
+select {
+    appearance: none; /* Remove estilo padrão */
+    background-color: white;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007bff%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px auto;
+    padding-right: 40px; /* Espaço para a seta */
+}
+
+
+textarea {
+    resize: vertical;
+    min-height: 80px; /* Altura mínima */
+}
+
+label {
+    display: block;
+    margin-bottom: 8px; /* Mais espaço abaixo do label */
+    font-weight: bold;
+    color: #555; /* Cinza escuro para labels */
+}
+
+/* Estilos para seções e listas */
+.form-section, .list-section {
+    border: none; /* Remove borda padrão */
+    padding: 25px; /* Mais padding */
+    margin-bottom: 25px;
+    background-color: #ffffff; /* Branco */
+    border-radius: 8px; /* Bordas mais arredondadas */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.08); /* Sombra mais suave */
+}
+
+.form-section h3, .list-section h3 {
+    margin-top: 0;
+    color: #3498db; /* Azul */
+    border-bottom: 1px solid #ecf0f1; /* Linha divisória muito sutil */
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    display: flex; /* Para alinhar ícone e texto */
+    align-items: center;
+}
+.form-section h3 span, .list-section h3 span {
+    margin-right: 10px; /* Espaço depois do ícone */
+}
+
+
+.vehicle-item, .maintenance-item, .schedule-item {
+    border-bottom: 1px solid #ecf0f1; /* Cinza bem claro */
+    padding: 15px 0; /* Mais padding vertical */
+    margin-bottom: 0; /* Remove margem inferior, padding já faz o espaçamento */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap; /* Permite quebra de linha em telas pequenas */
+    gap: 10px; /* Espaço entre os elementos flex (texto e botões) */
+}
+
+/* Remove borda do último item */
+.vehicle-item:last-child, .maintenance-item:last-child, .schedule-item:last-child {
+    border-bottom: none;
+    padding-bottom: 5px; /* Reduz padding inferior do último */
+}
+
+.vehicle-item span, .maintenance-item span, .schedule-item span {
+    flex-grow: 1; /* Texto ocupa espaço disponível */
+    margin-right: 10px;
+    word-break: break-word; /* Quebra palavras longas se necessário */
+}
+
+/* Estilo para os botões de ação dentro dos itens da lista */
+.vehicle-item .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px; /* Espaço entre botões de ação */
+}
+
+
+.info-veiculo {
+    border: 1px solid #ecf0f1;
+    padding: 15px;
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    clear: both;
+}
+
+.info-veiculo p {
+    margin: 8px 0; /* Espaçamento entre parágrafos de info */
+    color: #555;
+}
+.info-veiculo p strong {
+    color: #333;
+    min-width: 120px; /* Alinha um pouco os labels */
+    display: inline-block;
+}
+/* Adiciona estilo para status On/Off se não existir */
+.status-on { color: #2ecc71; font-weight: bold; } /* Verde */
+.status-off { color: #e74c3c; font-weight: bold; } /* Vermelho */
+
+/* Notificações */
+#notificacoes {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    min-width: 250px;
+    max-width: 400px;
+    background-color: #2ecc71; /* Verde sucesso */
+    color: white;
+    padding: 15px 20px;
+    border-radius: 5px;
+    /* display: none; Não mais necessário com opacity/transform */
+    z-index: 1050; /* Acima do modal */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    opacity: 0; /* Começa invisível para transição */
+    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+    transform: translateX(100%); /* Começa fora da tela */
+    font-size: 0.95em;
+    pointer-events: none; /* Evita clicar "através" da notificação escondida */
+}
+#notificacoes.show { /* Classe para mostrar */
+     /* display: block; Não é mais necessário */
+     opacity: 0.95;
+     transform: translateX(0);
+     pointer-events: auto; /* Permite interação quando visível */
+}
+
+#notificacoes.error { background-color: #e74c3c; } /* Vermelho */
+#notificacoes.warning { background-color: #f39c12; color: white; } /* Laranja */
+#notificacoes.info { background-color: #3498db; } /* Azul */
+
+/* Estilos para o Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.7); /* Fundo mais escuro */
+    padding-top: 50px; /* Espaço no topo */
+    animation: fadeIn 0.3s ease-out; /* Animação de entrada */
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 30px 40px; /* Mais padding interno */
+    border: none; /* Remove borda */
+    width: 90%;
+    max-width: 800px; /* Aumenta largura máxima */
+    border-radius: 10px; /* Bordas mais arredondadas */
+    position: relative;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    animation: slideIn 0.4s ease-out; /* Animação de entrada */
+}
+/* Animações de saída do modal */
+.modal-content.animate-out {
+    animation: slideOut 0.3s ease-in forwards;
+}
+.modal.animate-out-bg { /* Animação para o fundo */
+    animation: fadeOut 0.3s ease-in forwards;
+}
+
+@keyframes slideIn {
+    from { transform: translateY(-30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+@keyframes slideOut {
+    from { transform: translateY(0); opacity: 1; }
+    to { transform: translateY(30px); opacity: 0; }
+}
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+
+.close-button {
+    color: #aaa;
+    position: absolute;
+    top: 15px;
+    right: 25px;
+    font-size: 35px;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: #555; /* Cor mais escura no hover */
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Adiciona espaço entre as seções do modal */
+#modalDetalhesVeiculo .info-veiculo,
+#modalDetalhesVeiculo .actions,
+#modalDetalhesVeiculo .list-section,
+#modalDetalhesVeiculo .form-section {
+    margin-top: 30px; /* Aumenta espaço entre seções */
+}
+#modalDetalhesVeiculo .actions {
+    padding-top: 20px;
+    border-top: 1px solid #ecf0f1; /* Linha separadora acima das ações */
+     display: flex; /* Ajusta layout dos botões */
+     flex-wrap: wrap;
+     gap: 10px;
+     justify-content: center; /* Centraliza botões de ação */
+}
+/* Estilo específico para container de carga no modal */
+#modalAcoesVeiculo > div[style*="display: flex"] {
+    width: 100%; /* Ocupa a largura */
+    justify-content: center; /* Centraliza itens de carga */
+    padding: 10px 0;
+    border-top: 1px dashed #ccc; /* Linha tracejada para separar carga */
+    margin-top: 15px;
+}
+
+
+/* Placeholders */
+::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+  color: #aaa;
+  opacity: 1; /* Firefox */
+}
+:-ms-input-placeholder { /* Internet Explorer 10-11 */
+  color: #aaa;
+}
+::-ms-input-placeholder { /* Microsoft Edge */
+  color: #aaa;
+}
+
+/* Estilos responsivos simples */
+@media (max-width: 768px) {
+    body { padding: 10px; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    .modal-content {
+        width: 95%;
+        padding: 20px;
+        margin: 10% auto;
+    }
+    .vehicle-item, .maintenance-item, .schedule-item {
+        flex-direction: column; /* Empilha itens em telas menores */
+        align-items: flex-start; /* Alinha à esquerda */
+    }
+     .vehicle-item span, .maintenance-item span, .schedule-item span {
+         margin-bottom: 10px; /* Espaço abaixo do texto quando empilhado */
+     }
+     .vehicle-item .actions {
+         width: 100%; /* Botões ocupam largura total */
+         justify-content: flex-start;
+     }
+     button {
+         padding: 10px 15px;
+     }
+     #modalAcoesVeiculo > div[style*="display: flex"] {
+         flex-direction: column; /* Empilha controles de carga */
+         align-items: stretch;
+     }
+     #modalAcoesVeiculo input[type="number"] {
+         margin-bottom: 10px; /* Espaço abaixo do input de peso */
+     }
+}
