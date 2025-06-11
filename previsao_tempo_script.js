@@ -26,7 +26,7 @@ let dadosCompletosDaApi = null;
 async function buscarPrevisaoDetalhada(cidade) {
     // URL do seu backend. Certifique-se que a porta (3001) é a mesma do seu server.js
     // Para deploy, esta URL precisará ser a URL pública do seu backend.
-   const backendUrl = `http://localhost:3001/api/previsao/${encodeURIComponent(cidade)}`;
+   const backendUrl = `https://iiw24-a7-b2.onrender.com/api/previsao/${encodeURIComponent(cidade)}`;
 
     console.log(`[Frontend] Solicitando previsão para: ${cidade} via backend em ${backendUrl}`);
 
@@ -77,7 +77,7 @@ async function buscarPrevisaoDetalhada(cidade) {
     // A URL AGORA APONTA PARA O SEU SERVIDOR BACKEND
     // Certifique-se que a porta (ex: 3001) é a mesma que seu server.js está escutando.
     // Se você fizer deploy do backend, esta URL precisará ser a URL pública do seu backend.
-    const backendUrl = `http://localhost:3001/api/previsao/${encodeURIComponent(cidade)}`;
+    const backendUrl = `https://iiw24-a7-b2.onrender.com/api/previsao/${encodeURIComponent(cidade)}`;
 
     console.log(`[Frontend] Solicitando previsão para: ${cidade} via backend em ${backendUrl}`);
 
