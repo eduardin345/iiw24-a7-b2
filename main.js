@@ -319,11 +319,9 @@ function verificarAgendamentosProximos() {
 // ====================================================================
 // ====================== INICIALIZAÇÃO GERAL =========================
 // ====================================================================
+// Localize este trecho no seu main.js...
 document.addEventListener('DOMContentLoaded', () => {
     flatpickr.localize(flatpickr.l10ns.pt);
-
-    // Navegação entre Telas
-    // (A navegação é feita via `onclick="mostrarTela('...'))` nos botões do HTML)
 
     // Inicialização do Simulador
     selecionarVeiculoSimulador('Carro');
@@ -331,6 +329,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Inicialização da Garagem Avançada
     carregarGaragem();
     
+    // ** ADICIONE ESTAS 3 LINHAS AQUI **
+    carregarVeiculosDestaque();
+    carregarServicosOferecidos();
+    carregarDicasManutencao();
+    
+    // ... o restante dos listeners de formulário permanece igual
     // Listeners dos formulários
     document.getElementById('formAdicionarVeiculo').addEventListener('submit', event => {
         event.preventDefault();
@@ -385,3 +389,84 @@ document.addEventListener('DOMContentLoaded', () => {
 
     console.log("Garagem Inteligente Unificada INICIALIZADA.");
 });
+
+// ====================================================================
+// ============= CONSUMO DOS ENDPOINTS DO ARSENAL DE DADOS ============
+// ====================================================================
+
+// Coloque o URL do seu backend do Render aqui quando for fazer o deploy final.
+// Para testar localmente, use o de localhost.
+const backendUrl = 'http://localhost:3001'; // ATENÇÃO: Altere para a URL do seu Render.com
+
+async function carregarVeiculosDestaque() {
+    const container = document.getElementById('veiculos-destaque-container');
+    try {
+        const response = await fetch(`${backendUrl}/api/garagem/veiculos-destaque`);
+        if (!response.ok) throw new Error(`Falha na rede: ${response.statusText}`);
+        const veiculos = await response.json();
+        
+        container.innerHTML = ''; // Limpa "Carregando..."
+        veiculos.forEach(v => {
+            const card = document.createElement('div');
+            card.className = 'veiculo-card';
+            card.innerHTML = `
+                <img src="${v.imagemUrl || 'img/placeholder.jpg'}" alt="${v.modelo}" class="veiculo-card-imagem">
+                <div class="veiculo-card-conteudo">
+                    <h3>${v.modelo} (${v.ano})</h3>
+                    <p>${v.destaque}</p>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+
+    } catch (error) {
+        container.innerHTML = `<p style="color:red;">Erro ao carregar veículos: ${error.message}</p>`;
+    }
+}
+
+async function carregarServicosOferecidos() {
+    const lista = document.getElementById('servicos-oferecidos-lista');
+    try {
+        const response = await fetch(`${backendUrl}/api/garagem/servicos-oferecidos`);
+        if (!response.ok) throw new Error('Falha ao carregar serviços.');
+        const servicos = await response.json();
+
+        lista.innerHTML = '';
+        servicos.forEach(s => {
+            const item = document.createElement('li');
+            item.className = 'servico-item';
+            item.innerHTML = `
+                <strong>${s.nome}</strong>
+                ${s.descricao}<br>
+                <span>Preço: ${s.precoEstimado}</span>
+            `;
+            lista.appendChild(item);
+        });
+
+    } catch (error) {
+        lista.innerHTML = `<li style="color:red; list-style-type: none;">${error.message}</li>`;
+    }
+}
+
+async function carregarDicasManutencao() {
+    const container = document.getElementById('dicas-manutencao-container');
+    try {
+        const response = await fetch(`${backendUrl}/api/garagem/dicas-manutencao`);
+        if (!response.ok) throw new Error('Falha ao carregar dicas.');
+        const dicas = await response.json();
+
+        container.innerHTML = '';
+        dicas.forEach(d => {
+            const item = document.createElement('div');
+            item.className = 'dica-item';
+            item.innerHTML = `
+                <i class="fas fa-lightbulb"></i>
+                <p>${d.dica}</p>
+            `;
+            container.appendChild(item);
+        });
+
+    } catch (error) {
+        container.innerHTML = `<p style="color:red;">${error.message}</p>`;
+    }
+}

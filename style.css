@@ -502,3 +502,94 @@ h2 {
     color: #e0f7fa;
     margin-top: 20px;
 }
+
+/* =========================================== */
+/* === ESTILOS PARA SEÇÕES DA API DO BACKEND == */
+/* =========================================== */
+
+/* === Veículos em Destaque === */
+.destaque-wrapper {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+}
+.veiculo-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.veiculo-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+.veiculo-card-imagem {
+    width: 100%;
+    height: 180px;
+    object-fit: cover; /* Garante que a imagem preencha o espaço sem distorcer */
+}
+.veiculo-card-conteudo {
+    padding: 20px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+.veiculo-card-conteudo h3 {
+    margin: 0 0 10px 0;
+    font-size: 1.2em;
+    color: var(--clean-primary);
+}
+.veiculo-card-conteudo p {
+    font-size: 0.95em;
+    color: var(--clean-text-secondary);
+    line-height: 1.5;
+}
+
+/* === Lista de Serviços === */
+.servicos-lista {
+    list-style-type: none;
+    padding-left: 0;
+}
+.servico-item {
+    background-color: #f8f9fa;
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    border-left: 5px solid var(--clean-primary);
+    border-radius: 0 8px 8px 0;
+}
+.servico-item strong {
+    font-size: 1.1em;
+    color: #333;
+    display: block;
+    margin-bottom: 5px;
+}
+.servico-item span {
+    color: var(--clean-success);
+    font-weight: 600;
+    font-size: 0.9em;
+}
+
+/* === Lista de Dicas === */
+.dicas-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.dica-item {
+    background-color: #fff8e1;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #ffecb3;
+    color: #6d4c41;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.dica-item i.fa-lightbulb {
+    color: #f57c00;
+    font-size: 1.5em;
+}
+
