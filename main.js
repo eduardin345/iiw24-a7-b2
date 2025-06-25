@@ -11,19 +11,22 @@ function mostrarTela(idTela) {
     }
 }
 
-// Para notificações flutuantes
 function exibirNotificacao(mensagem, tipo = 'info', duracaoMs = 4000) {
     const notificacaoDiv = document.getElementById('notificacoes');
     if (!notificacaoDiv) return;
 
+    if (notificacaoDiv.timeoutId) clearTimeout(notificacaoDiv.timeoutId);
+    
     notificacaoDiv.textContent = mensagem;
     notificacaoDiv.className = ``;
     notificacaoDiv.classList.add(tipo, 'show');
 
-    setTimeout(() => notificacaoDiv.classList.remove('show'), duracaoMs);
+    notificacaoDiv.timeoutId = setTimeout(() => {
+         notificacaoDiv.classList.remove('show');
+         notificacaoDiv.timeoutId = null;
+    }, duracaoMs);
 }
 
-// Para mensagens fixas na tela do simulador
 function exibirMensagemSimulador(mensagem, tipo = 'info') {
     const mensagemDiv = document.getElementById('mensagem');
     if(mensagemDiv) {
@@ -43,98 +46,78 @@ function renderizarSimulador() {
         container.innerHTML = "<p>Selecione um tipo de veículo abaixo para começar.</p>";
         return;
     }
-
+    const imagens = {
+        Carro: 'images.jpg',
+        CarroEsportivo: 'png-transparent-ford-gt-shelby-mustang-california-special-mustang-2018-ford-mustang-gt-premium-ford-car-performance-car-vehicle.png',
+        Caminhao: 'images (1).jpg',
+    };
+    const imagemSrc = `img/${imagens[veiculoSimuladorAtivo.tipoVeiculo] || 'placeholder.jpg'}`;
+    
     let html = `
         <h2>${veiculoSimuladorAtivo.modelo}</h2>
-        <img src="img/${veiculoSimuladorAtivo.imagem}" alt="Imagem de um ${veiculoSimuladorAtivo.tipoVeiculo}" class="vehicle-image">
+        <img src="${imagemSrc}" alt="Imagem de um ${veiculoSimuladorAtivo.tipoVeiculo}" class="vehicle-image">
         <div class="info-box">${veiculoSimuladorAtivo.exibirInformacoesCompletaHTML()}</div>
         <div class="button-group">
             <button onclick="acaoSimulador('ligar')" class="button button-success"><i class="fas fa-play"></i> Ligar</button>
             <button onclick="acaoSimulador('desligar')" class="button button-danger"><i class="fas fa-stop"></i> Desligar</button>
-            <button onclick="acaoSimulador('acelerar')" class="button button-primary"><i class="fas fa-forward"></i> Acelerar</button>
+            <button onclick="acaoSimulador('acelerar', 15)" class="button button-primary"><i class="fas fa-forward"></i> Acelerar</button>
             <button onclick="acaoSimulador('buzinar')" class="button button-primary"><i class="fas fa-volume-up"></i> Buzinar</button>
     `;
-    
-    // Ações específicas
     if (veiculoSimuladorAtivo instanceof CarroEsportivo) {
-        html += `<button onclick="acaoSimulador('ativarTurbo')" class="button button-warning"><i class="fas fa-fire"></i> Turbo</button>`;
+        html += veiculoSimuladorAtivo.turbo ? `<button onclick="acaoSimulador('desativarTurbo')" class="button" style="background-color: #95a5a6;"><i class="fas fa-snowflake"></i> Turbo OFF</button>`
+                                           : `<button onclick="acaoSimulador('ativarTurbo')" class="button button-warning"><i class="fas fa-fire"></i> Turbo ON</button>`;
     }
-
-    html += `</div>`; // Fecha button-group
-
+    html += `</div>`;
     if (veiculoSimuladorAtivo instanceof Caminhao) {
         html += `
             <div class="cargo-section">
                 <label for="pesoCargaSimulador">Peso da Carga (kg):</label>
-                <input type="number" id="pesoCargaSimulador" placeholder="0">
+                <input type="number" id="pesoCargaSimulador" placeholder="1000">
                 <button onclick="acaoSimulador('carregar')" class="button button-warning"><i class="fas fa-truck-loading"></i> Carregar</button>
-            </div>
-        `;
+                <button onclick="acaoSimulador('descarregar')" class="button" style="background-color: #34495e;"><i class="fas fa-truck-unloading"></i> Descarregar</button>
+            </div>`;
     }
-    
     container.innerHTML = html;
 }
 
-function acaoSimulador(acao) {
+function acaoSimulador(acao, param = null) {
     if (!veiculoSimuladorAtivo) return;
-
-    // Redefine a função global para que as classes possam usá-la
+    const originalNotificacao = window.exibirNotificacao;
     window.exibirNotificacao = exibirMensagemSimulador; 
-
     try {
-        if (acao === 'carregar') {
-            const pesoInput = document.getElementById('pesoCargaSimulador');
-            if (pesoInput && pesoInput.value) {
-                veiculoSimuladorAtivo.carregar(pesoInput.value);
-            }
-        } else {
-             veiculoSimuladorAtivo[acao](); // Chama a ação na instância
+        if (acao === 'carregar' || acao === 'descarregar') {
+            param = document.getElementById('pesoCargaSimulador')?.value;
         }
+        veiculoSimuladorAtivo[acao](param);
     } catch(e) {
         console.error("Erro na ação do simulador:", e);
         exibirMensagemSimulador("Ação não pôde ser executada.", 'error');
     }
-
-    // Após a ação, renderiza novamente o estado do simulador
     renderizarSimulador();
+    window.exibirNotificacao = originalNotificacao; 
 }
 
 function selecionarVeiculoSimulador(tipo) {
-    const tempExibirNotificacao = window.exibirNotificacao; // Salva a função global
-    window.exibirNotificacao = exibirMensagemSimulador; // Redefine para a do simulador
-
     switch (tipo) {
-        case 'Carro':
-            veiculoSimuladorAtivo = new Carro('Carro Padrão', 'Cinza');
-            veiculoSimuladorAtivo.imagem = "images.jpg"; // Você precisará ter as imagens na pasta img/
-            break;
-        case 'CarroEsportivo':
-            veiculoSimuladorAtivo = new CarroEsportivo('Mustang', 'Vermelho');
-            veiculoSimuladorAtivo.imagem = "png-transparent-ford-gt-shelby-mustang-california-special-mustang-2018-ford-mustang-gt-premium-ford-car-performance-car-vehicle.png";
-            break;
-        case 'Caminhao':
-            veiculoSimuladorAtivo = new Caminhao('Caminhão Scania', 'Branco', 15000);
-             veiculoSimuladorAtivo.imagem = "images (1).jpg";
-            break;
+        case 'Carro': veiculoSimuladorAtivo = new Carro('Carro Padrão', 'Cinza'); break;
+        case 'CarroEsportivo': veiculoSimuladorAtivo = new CarroEsportivo('Mustang GT', 'Vermelho'); break;
+        case 'Caminhao': veiculoSimuladorAtivo = new Caminhao('Scania R450', 'Branco', 15000); break;
     }
-    document.getElementById('mensagem').style.display = 'none'; // Esconde msg anterior
+    document.getElementById('mensagem').style.display = 'none';
     renderizarSimulador();
-    window.exibirNotificacao = tempExibirNotificacao; // Restaura a função global
 }
-
 
 // ====================================================================
 // ============== GERENCIAMENTO AVANÇADO DA GARAGEM ===================
 // ====================================================================
 let garagem = [];
-const STORAGE_KEY = 'minhaGaragemInteligente_v3'; // Versão nova
+const STORAGE_KEY = 'minhaGaragemInteligente_v3';
 
 function salvarGaragem() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(garagem.map(v => v.toJSON())));
 }
 
 function carregarGaragem() {
-    window.exibirNotificacao = exibirNotificacao; // Garante que a notificação correta seja usada
     const garagemJSON = localStorage.getItem(STORAGE_KEY);
     if (garagemJSON) {
         garagem = JSON.parse(garagemJSON)
@@ -143,79 +126,44 @@ function carregarGaragem() {
     }
     renderizarGaragem();
     renderizarAgendamentosFuturos();
-    verificarAgendamentosProximos();
 }
 
 function renderizarGaragem() {
     const listaVeiculosDiv = document.getElementById('listaVeiculos');
-    listaVeiculosDiv.innerHTML = '';
-    if (garagem.length === 0) {
-        listaVeiculosDiv.innerHTML = '<p style="text-align: center; color: #777;">Sua garagem está vazia.</p>';
-        return;
-    }
+    listaVeiculosDiv.innerHTML = (garagem.length === 0) ? '<p style="text-align: center; color: #777;">Sua garagem está vazia.</p>' : '';
     garagem.forEach(veiculo => {
         const itemDiv = document.createElement('div');
-        itemDiv.classList.add('vehicle-item');
+        itemDiv.className = 'vehicle-item';
         itemDiv.innerHTML = `
             <span><strong>${veiculo.modelo}</strong> (${veiculo.tipoVeiculo}) - Cor: ${veiculo.cor}</span>
             <div class="actions">
                 <button onclick="abrirModalDetalhes('${veiculo.id}')">Detalhes / Manutenção</button>
                 <button class="button-danger" onclick="removerVeiculo('${veiculo.id}')">Remover</button>
-            </div>
-        `;
+            </div>`;
         listaVeiculosDiv.appendChild(itemDiv);
     });
 }
-// Cole aqui todas as outras funções do seu `script.js` antigo:
-// renderizarHistoricoManutencaoModal
-// renderizarAgendamentosFuturos
-// abrirModalDetalhes
-// fecharModal
-// atualizarInfoVeiculoNoModal
-// executarAcaoVeiculo
-// removerVeiculo
-// removerManutencao
-// verificarAgendamentosProximos
-// ... (Copie e cole TODAS essas funções aqui, elas funcionarão como antes)
-// NOTA: As funções de notificação já foram definidas no topo do arquivo.
-
-// Funções do `script.js` copiadas e adaptadas:
 
 function renderizarHistoricoManutencaoModal(veiculoId) {
     const veiculo = garagem.find(v => v.id === veiculoId);
-    const historicoDiv = document.getElementById('modalHistoricoManutencao');
-    if (!veiculo) return;
-    historicoDiv.innerHTML = veiculo.getHistoricoHTML();
+    if(veiculo) document.getElementById('modalHistoricoManutencao').innerHTML = veiculo.getHistoricoHTML();
 }
 
 function renderizarAgendamentosFuturos() {
     const listaAgendamentosDiv = document.getElementById('listaAgendamentosFuturos');
-    listaAgendamentosDiv.innerHTML = '';
     const agora = new Date();
-    let agendamentos = [];
+    const agendamentos = garagem
+        .flatMap(veiculo => veiculo.historicoManutencao.map(manutencao => ({ veiculo, manutencao })))
+        .filter(item => item.manutencao.data instanceof Date && !isNaN(item.manutencao.data) && item.manutencao.data > agora)
+        .sort((a, b) => a.manutencao.data - b.manutencao.data);
 
-    garagem.forEach(veiculo => {
-        veiculo.historicoManutencao.forEach(manutencao => {
-            if (manutencao.data instanceof Date && !isNaN(manutencao.data.getTime()) && manutencao.data > agora) {
-                agendamentos.push({ veiculo, manutencao });
-            }
-        });
-    });
-
-    agendamentos.sort((a, b) => a.manutencao.data - b.manutencao.data);
-
-    if (agendamentos.length === 0) {
-        listaAgendamentosDiv.innerHTML = '<p style="text-align: center; color: #777;">Nenhum agendamento futuro.</p>';
-        return;
-    }
-
+    listaAgendamentosDiv.innerHTML = (agendamentos.length === 0) ? '<p style="text-align: center; color: #777;">Nenhum agendamento futuro.</p>' : '';
     agendamentos.forEach(item => {
         const itemDiv = document.createElement('div');
-        itemDiv.classList.add('schedule-item');
+        itemDiv.className = 'schedule-item';
         itemDiv.innerHTML = `
              <span>${item.manutencao.formatar(true, `${item.veiculo.modelo} (${item.veiculo.cor})`)}</span>
-             <button class="button-warning" onclick="removerManutencao('${item.veiculo.id}', '${item.manutencao.id}')">Cancelar</button>
-        `;
+             <button class="button-warning" onclick="removerManutencao('${item.veiculo.id}', '${item.manutencao.id}')">Cancelar</button>`;
         listaAgendamentosDiv.appendChild(itemDiv);
     });
 }
@@ -224,76 +172,52 @@ const modal = document.getElementById('modalDetalhesVeiculo');
 function abrirModalDetalhes(veiculoId) {
     const veiculo = garagem.find(v => v.id === veiculoId);
     if (!veiculo) return;
-    
-    // As classes de veículo precisam saber qual função de notificação usar
-    window.exibirNotificacao = exibirNotificacao; 
-
     document.getElementById('modalTituloVeiculo').textContent = `Detalhes: ${veiculo.modelo}`;
     document.getElementById('manutencaoVeiculoId').value = veiculoId;
-    
     atualizarInfoVeiculoNoModal(veiculoId);
     renderizarHistoricoManutencaoModal(veiculoId);
-    
-    flatpickr("#manutencaoData", {
-        enableTime: true, dateFormat: "Y-m-d H:i", minDate: "today", locale: "pt"
-    });
-    
+    flatpickr("#manutencaoData", { enableTime: true, dateFormat: "Y-m-d H:i", minDate: "today", locale: "pt" });
     modal.style.display = 'block';
 }
 
 function fecharModal() { modal.style.display = 'none'; }
 
 function atualizarInfoVeiculoNoModal(veiculoId) {
-    if (modal.style.display !== 'block') return;
+    if (modal.style.display !== 'block' || document.getElementById('manutencaoVeiculoId').value !== veiculoId) return;
     const veiculo = garagem.find(v => v.id === veiculoId);
     if (!veiculo) return;
 
     document.getElementById('modalInfoVeiculo').innerHTML = veiculo.exibirInformacoesCompletaHTML();
-    
     const acoesDiv = document.getElementById('modalAcoesVeiculo');
-    acoesDiv.innerHTML = '';
-
-    if (!veiculo.ligado) {
-        acoesDiv.innerHTML += `<button onclick="executarAcaoVeiculo('${veiculo.id}', 'ligar')"><i class="fas fa-key"></i> Ligar</button>`;
-    } else {
-        acoesDiv.innerHTML += `<button onclick="executarAcaoVeiculo('${veiculo.id}', 'desligar')"><i class="fas fa-power-off"></i> Desligar</button>`;
-        acoesDiv.innerHTML += `<button onclick="executarAcaoVeiculo('${veiculo.id}', 'acelerar')"><i class="fas fa-tachometer-alt"></i> Acelerar</button>`;
-    }
-     acoesDiv.innerHTML += `<button onclick="executarAcaoVeiculo('${veiculo.id}', 'buzinar')"><i class="fas fa-bullhorn"></i> Buzinar</button>`;
-
+    acoesDiv.innerHTML = `
+        <button onclick="executarAcaoVeiculo('${veiculo.id}', '${veiculo.ligado ? 'desligar' : 'ligar'}')"><i class="fas fa-key"></i> ${veiculo.ligado ? 'Desligar' : 'Ligar'}</button>
+        ${veiculo.ligado ? `<button onclick="executarAcaoVeiculo('${veiculo.id}', 'acelerar', 10)"><i class="fas fa-tachometer-alt"></i> Acelerar</button>` : ''}
+        <button onclick="executarAcaoVeiculo('${veiculo.id}', 'buzinar')"><i class="fas fa-bullhorn"></i> Buzinar</button>`;
+    
     if (veiculo instanceof CarroEsportivo) {
-        if (!veiculo.turbo) acoesDiv.innerHTML += `<button onclick="executarAcaoVeiculo('${veiculo.id}', 'ativarTurbo')"><i class="fas fa-rocket"></i> Ativar Turbo</button>`;
-        else acoesDiv.innerHTML += `<button onclick="executarAcaoVeiculo('${veiculo.id}', 'desativarTurbo')"><i class="fas fa-sliders-h"></i> Desativar Turbo</button>`;
+        acoesDiv.innerHTML += `<button onclick="executarAcaoVeiculo('${veiculo.id}', '${veiculo.turbo ? 'desativarTurbo' : 'ativarTurbo'}')"><i class="fas fa-rocket"></i> ${veiculo.turbo ? 'Desativar Turbo' : 'Ativar Turbo'}</button>`;
     } else if (veiculo instanceof Caminhao) {
-        const cargaHTML = `
+        acoesDiv.innerHTML += `
             <div style="display: flex; gap: 10px; margin-top: 10px;">
                 <input type="number" id="pesoCargaModal_${veiculo.id}" placeholder="Peso (kg)" style="width: 120px;">
                 <button onclick="executarAcaoVeiculo('${veiculo.id}', 'carregar')"><i class="fas fa-plus"></i> Carregar</button>
                 <button onclick="executarAcaoVeiculo('${veiculo.id}', 'descarregar')"><i class="fas fa-minus"></i> Descarregar</button>
-            </div>
-        `;
-        acoesDiv.innerHTML += cargaHTML;
+            </div>`;
     }
 }
 
-function executarAcaoVeiculo(veiculoId, acao) {
+function executarAcaoVeiculo(veiculoId, acao, param = null) {
     const veiculo = garagem.find(v => v.id === veiculoId);
     if (!veiculo) return;
-
-    let param = null;
     if (acao === 'carregar' || acao === 'descarregar') {
-        const input = document.getElementById(`pesoCargaModal_${veiculoId}`);
-        param = input.value;
+        param = document.getElementById(`pesoCargaModal_${veiculoId}`)?.value;
     }
-    
-    if (typeof veiculo[acao] === 'function') {
-        veiculo[acao](param);
-    }
+    if (typeof veiculo[acao] === 'function') veiculo[acao](param);
 }
 
 function removerVeiculo(veiculoId) {
     const veiculo = garagem.find(v => v.id === veiculoId);
-    if (confirm(`Tem certeza que deseja remover o veículo ${veiculo.modelo}?`)) {
+    if (veiculo && confirm(`Tem certeza que deseja remover o veículo ${veiculo.modelo}?`)) {
         garagem = garagem.filter(v => v.id !== veiculoId);
         salvarGaragem();
         renderizarGaragem();
@@ -311,53 +235,94 @@ function removerManutencao(veiculoId, manutencaoId) {
     }
 }
 
-function verificarAgendamentosProximos() {
-    // Implementação mantida a mesma
+// ====================================================================
+// ============= CONSUMO DOS ENDPOINTS DO ARSENAL DE DADOS ============
+// ====================================================================
+
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const backendUrl = isLocal ? 'http://localhost:3001' : 'https://iiw24-a7-b2.onrender.com';
+
+async function fetchData(endpoint, container, renderer) {
+    try {
+        const response = await fetch(`${backendUrl}${endpoint}`);
+        if (!response.ok) throw new Error(`Falha na rede (status ${response.status}) ao buscar ${endpoint}`);
+        const data = await response.json();
+        renderer(data, container);
+    } catch (error) {
+        console.error(`Erro ao carregar dados de ${endpoint}:`, error);
+        container.innerHTML = `<p style="color:red; text-align:center;">Não foi possível carregar os dados. Verifique a rota e se o servidor backend está rodando.</p>`;
+    }
 }
 
+function renderDestaques(data, container) {
+    container.innerHTML = '';
+    data.forEach(v => {
+        const card = document.createElement('div');
+        card.className = 'veiculo-card';
+        card.innerHTML = `<img src="${v.imagemUrl || 'img/placeholder.jpg'}" alt="${v.modelo}" class="veiculo-card-imagem">
+                          <div class="veiculo-card-conteudo"><h3>${v.modelo} (${v.ano})</h3><p>${v.destaque}</p></div>`;
+        container.appendChild(card);
+    });
+}
+
+function renderServicos(data, container) {
+    container.innerHTML = '';
+    data.forEach(s => {
+        const item = document.createElement('li');
+        item.className = 'servico-item';
+        item.innerHTML = `<strong>${s.nome}</strong> ${s.descricao}<br><span>Preço: ${s.precoEstimado}</span>`;
+        container.appendChild(item);
+    });
+}
+
+function renderDicas(data, container) {
+    container.innerHTML = '';
+    data.forEach(d => {
+        const item = document.createElement('div');
+        item.className = 'dica-item';
+        item.innerHTML = `<i class="fas fa-lightbulb"></i> <p>${d.dica}</p>`;
+        container.appendChild(item);
+    });
+}
 
 // ====================================================================
 // ====================== INICIALIZAÇÃO GERAL =========================
 // ====================================================================
-// Localize este trecho no seu main.js...
+
 document.addEventListener('DOMContentLoaded', () => {
-    flatpickr.localize(flatpickr.l10ns.pt);
+    console.log(`Rodando em ambiente ${isLocal ? 'Local' : 'Produção'}. Usando backend em: ${backendUrl}`);
+    if (window.flatpickr && flatpickr.l10ns.pt) flatpickr.localize(flatpickr.l10ns.pt);
 
-    // Inicialização do Simulador
+    mostrarTela('telaSimulador');
     selecionarVeiculoSimulador('Carro');
-
-    // Inicialização da Garagem Avançada
     carregarGaragem();
     
-    // ** ADICIONE ESTAS 3 LINHAS AQUI **
-    carregarVeiculosDestaque();
-    carregarServicosOferecidos();
-    carregarDicasManutencao();
+    // ================================================
+    // AQUI ESTÁ A CORREÇÃO (TENTATIVA 2)
+    // Chamadas sem o prefixo `/api`
+    // Esta é a nossa próxima hipótese mais provável para o erro 404
+    // ================================================
+    fetchData('/veiculos-destaque', document.getElementById('veiculos-destaque-container'), renderDestaques);
+    fetchData('/servicos-oferecidos', document.getElementById('servicos-oferecidos-lista'), renderServicos);
+    fetchData('/dicas-manutencao', document.getElementById('dicas-manutencao-container'), renderDicas);
     
-    // ... o restante dos listeners de formulário permanece igual
-    // Listeners dos formulários
     document.getElementById('formAdicionarVeiculo').addEventListener('submit', event => {
         event.preventDefault();
-        window.exibirNotificacao = exibirNotificacao; // Usa a notificação global
-        
         const tipo = document.getElementById('tipoVeiculo').value;
         const modelo = document.getElementById('modeloVeiculo').value;
         const cor = document.getElementById('corVeiculo').value;
-        
         let novoVeiculo;
-        if(tipo === 'Caminhao') {
-            const capacidade = document.getElementById('capacidadeCargaVeiculo').value;
-            novoVeiculo = new Caminhao(modelo, cor, capacidade);
-        } else if(tipo === 'CarroEsportivo') {
-            novoVeiculo = new CarroEsportivo(modelo, cor);
-        } else {
-            novoVeiculo = new Carro(modelo, cor);
+        switch (tipo) {
+            case 'Caminhao': novoVeiculo = new Caminhao(modelo, cor, document.getElementById('capacidadeCargaVeiculo').value); break;
+            case 'CarroEsportivo': novoVeiculo = new CarroEsportivo(modelo, cor); break;
+            default: novoVeiculo = new Carro(modelo, cor);
         }
         garagem.push(novoVeiculo);
         salvarGaragem();
         renderizarGaragem();
         exibirNotificacao(`${modelo} adicionado à garagem!`, 'success');
         event.target.reset();
+        document.getElementById('campoCapacidadeCarga').style.display = 'none';
     });
 
     document.getElementById('tipoVeiculo').addEventListener('change', function() {
@@ -366,17 +331,15 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.getElementById('formManutencao').addEventListener('submit', event => {
         event.preventDefault();
-        window.exibirNotificacao = exibirNotificacao; // Usa a notificação global
-        
         const veiculoId = document.getElementById('manutencaoVeiculoId').value;
         const veiculo = garagem.find(v => v.id === veiculoId);
-        
         if (veiculo) {
-            const data = document.getElementById('manutencaoData').value;
-            const tipo = document.getElementById('manutencaoTipo').value;
-            const custo = document.getElementById('manutencaoCusto').value;
-            const descricao = document.getElementById('manutencaoDescricao').value;
-            const novaManutencao = new Manutencao(data, tipo, custo, descricao);
+            const novaManutencao = new Manutencao(
+                document.getElementById('manutencaoData').value,
+                document.getElementById('manutencaoTipo').value,
+                document.getElementById('manutencaoCusto').value,
+                document.getElementById('manutencaoDescricao').value
+            );
             if (veiculo.adicionarManutencao(novaManutencao)) {
                  renderizarHistoricoManutencaoModal(veiculoId);
                  renderizarAgendamentosFuturos();
@@ -385,88 +348,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    window.onclick = function(event) { if (event.target == modal) fecharModal(); }
-
+    window.onclick = (event) => { if (event.target == modal) fecharModal(); };
     console.log("Garagem Inteligente Unificada INICIALIZADA.");
 });
-
-// ====================================================================
-// ============= CONSUMO DOS ENDPOINTS DO ARSENAL DE DADOS ============
-// ====================================================================
-
-// Coloque o URL do seu backend do Render aqui quando for fazer o deploy final.
-// Para testar localmente, use o de localhost.
-const backendUrl = 'http://localhost:3001'; // ATENÇÃO: Altere para a URL do seu Render.com
-
-async function carregarVeiculosDestaque() {
-    const container = document.getElementById('veiculos-destaque-container');
-    try {
-        const response = await fetch(`${backendUrl}/api/garagem/veiculos-destaque`);
-        if (!response.ok) throw new Error(`Falha na rede: ${response.statusText}`);
-        const veiculos = await response.json();
-        
-        container.innerHTML = ''; // Limpa "Carregando..."
-        veiculos.forEach(v => {
-            const card = document.createElement('div');
-            card.className = 'veiculo-card';
-            card.innerHTML = `
-                <img src="${v.imagemUrl || 'img/placeholder.jpg'}" alt="${v.modelo}" class="veiculo-card-imagem">
-                <div class="veiculo-card-conteudo">
-                    <h3>${v.modelo} (${v.ano})</h3>
-                    <p>${v.destaque}</p>
-                </div>
-            `;
-            container.appendChild(card);
-        });
-
-    } catch (error) {
-        container.innerHTML = `<p style="color:red;">Erro ao carregar veículos: ${error.message}</p>`;
-    }
-}
-
-async function carregarServicosOferecidos() {
-    const lista = document.getElementById('servicos-oferecidos-lista');
-    try {
-        const response = await fetch(`${backendUrl}/api/garagem/servicos-oferecidos`);
-        if (!response.ok) throw new Error('Falha ao carregar serviços.');
-        const servicos = await response.json();
-
-        lista.innerHTML = '';
-        servicos.forEach(s => {
-            const item = document.createElement('li');
-            item.className = 'servico-item';
-            item.innerHTML = `
-                <strong>${s.nome}</strong>
-                ${s.descricao}<br>
-                <span>Preço: ${s.precoEstimado}</span>
-            `;
-            lista.appendChild(item);
-        });
-
-    } catch (error) {
-        lista.innerHTML = `<li style="color:red; list-style-type: none;">${error.message}</li>`;
-    }
-}
-
-async function carregarDicasManutencao() {
-    const container = document.getElementById('dicas-manutencao-container');
-    try {
-        const response = await fetch(`${backendUrl}/api/garagem/dicas-manutencao`);
-        if (!response.ok) throw new Error('Falha ao carregar dicas.');
-        const dicas = await response.json();
-
-        container.innerHTML = '';
-        dicas.forEach(d => {
-            const item = document.createElement('div');
-            item.className = 'dica-item';
-            item.innerHTML = `
-                <i class="fas fa-lightbulb"></i>
-                <p>${d.dica}</p>
-            `;
-            container.appendChild(item);
-        });
-
-    } catch (error) {
-        container.innerHTML = `<p style="color:red;">${error.message}</p>`;
-    }
-}
