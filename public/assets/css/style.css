@@ -1,0 +1,594 @@
+/* Reset Básico e Configurações Globais */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --clean-bg: #f4f7f6;
+    --clean-container-bg: #ffffff;
+    --clean-text: #333333;
+    --clean-text-secondary: #555555;
+    --clean-primary: #4a90e2;
+    --clean-secondary: #6c757d;
+    --clean-success: #5cb85c;
+    --clean-danger: #d9534f;
+    --clean-warning: #f0ad4e;
+    --clean-border: #dee2e6;
+    --font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--clean-bg);
+    color: var(--clean-text);
+    line-height: 1.6;
+    padding: 20px;
+}
+
+.container {
+    max-width: 900px;
+    margin: 30px auto;
+    background-color: var(--clean-container-bg);
+    padding: 30px 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    position: relative;
+}
+
+h1, h2, h3 { color: var(--clean-text); font-weight: 500; }
+h1 { font-size: 2.2em; text-align: center; margin-bottom: 10px; }
+h2 { font-size: 1.6em; color: var(--clean-text-secondary); margin-bottom: 25px; text-align: center; }
+h3 { font-size: 1.4em; }
+
+hr { border: none; height: 1px; background-color: var(--clean-border); margin: 25px 0; }
+
+.navigation-link { text-align: center; margin-top: 20px; }
+
+/* Estrutura das Telas e Navegação */
+.tela { display: none; animation: fadeIn 0.4s ease-out; }
+.tela-ativa { display: block; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.page-header { text-align: center; margin-bottom: 30px; }
+.page-header button { font-size: 0.9em; padding: 8px 15px; }
+
+
+/* Botões e Inputs */
+.button-group { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+.button {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 8px; padding: 10px 18px; border: none; border-radius: 6px;
+    cursor: pointer; font-family: var(--font-family); font-size: 0.95em; font-weight: 600;
+    color: white; text-decoration: none; transition: all 0.2s ease;
+    min-width: 130px;
+}
+.button:hover { filter: brightness(110%); transform: translateY(-2px); }
+.button:active { transform: translateY(0); filter: brightness(100%); }
+.button-primary { background-color: var(--clean-primary); }
+.button-secondary { background-color: var(--clean-secondary); }
+.button-success { background-color: var(--clean-success); }
+.button-danger { background-color: var(--clean-danger); }
+.button-warning { background-color: var(--clean-warning); color: var(--clean-text); }
+button i { margin-right: 5px; }
+
+
+/* Simulador Simples */
+.sim-container { margin-bottom: 25px; }
+.vehicle-image { max-width: 60%; height: auto; margin: 0 auto 25px auto; display: block; border-radius: 6px; }
+.info-box { background-color: #f8f9fa; border: 1px solid var(--clean-border); padding: 15px; margin-bottom: 25px; border-radius: 6px; text-align: left; min-height: 50px; }
+.info-box p { margin: 5px 0; }
+.cargo-section { margin: 25px 0; padding: 15px; background-color: #f8f9fa; border: 1px solid var(--clean-border); border-radius: 6px; display: flex; justify-content: center; align-items: center; gap: 10px; }
+.cargo-section input[type="number"] { padding: 8px 10px; border: 1px solid var(--clean-border); border-radius: 4px; max-width: 100px; text-align: right; }
+
+/* Gerenciamento de Garagem (Manutenção) */
+.form-section, .list-section { padding: 25px; margin-bottom: 25px; background-color: #ffffff; border: 1px solid var(--clean-border); border-radius: 8px; }
+.form-section h3, .list-section h3, .list-section h2 { margin: 0 0 20px 0; padding-bottom: 10px; text-align: left; border-bottom: 1px solid var(--clean-border); display: flex; align-items: center; }
+.form-section h3 i, .list-section h3 i, .list-section h2 i { margin-right: 10px; color: var(--clean-primary); }
+input[type="text"], input[type="number"], select, textarea {
+    width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px;
+}
+label { display: block; margin-bottom: 5px; font-weight: bold; }
+.vehicle-item, .schedule-item, .maintenance-item {
+    display: flex; justify-content: space-between; align-items: center; padding: 15px 5px; border-bottom: 1px solid var(--clean-border);
+}
+.vehicle-item:last-child, .schedule-item:last-child, .maintenance-item:last-child { border-bottom: none; }
+.vehicle-item .actions button { padding: 5px 10px; font-size: 0.9em; }
+
+/* Previsão do Tempo (estilos de previsao_tempo.html, integrados) */
+#busca-clima { display: flex; gap: 15px; margin-bottom: 30px; align-items: center; padding: 15px; background-color: rgba(255, 255, 255, 0.7); border-radius: 8px; }
+.loader-container { display: none; text-align: center; margin: 40px 0; }
+.loader { border: 6px solid #eaf0f6; border-top: 6px solid var(--clean-primary); border-radius: 50%; width: 50px; height: 50px; animation: spin 0.8s linear infinite; display: inline-block; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+#error-message, .message-area { display: none; margin: 15px 0 25px 0; padding: 15px; border: 1px solid #f5c6cb; background-color: #f8d7da; color: #721c24; border-radius: 6px; text-align: left; }
+#previsao-tempo-resultado h2 { border-bottom: none; }
+.container-previsao-dias { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; }
+.dia-previsao-item { background-color: #fff; border: 1px solid #e7e9ec; border-radius: 10px; padding: 20px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.05); transition: all 0.25s ease; cursor: pointer; }
+.dia-previsao-item:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+.dia-previsao-item h3 { font-size: 1.1em; font-weight: 600; }
+.dia-previsao-item img { width: 60px; height: 60px; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.1)); }
+.dia-previsao-item .temperaturas { font-size: 1.2em; }
+.dia-previsao-item .temp-max { color: var(--clean-danger); font-weight: 600; }
+.dia-previsao-item .temp-min { color: var(--clean-primary); font-weight: 600; }
+#conselhos-garagem ul { list-style-type: none; padding-left: 0; }
+#conselhos-garagem li { background-color: #eaf4ff; border-left: 5px solid var(--clean-primary); padding: 15px 20px; margin-bottom: 12px; border-radius: 0 6px 6px 0; }
+footer { text-align: center; margin-top: 30px; padding-top: 20px; font-size: 0.9em; color: var(--clean-text-secondary); border-top: 1px solid var(--clean-border); }
+
+/* Modal */
+.modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); }
+.modal-content { background-color: #fefefe; margin: 5% auto; padding: 30px; border: none; width: 90%; max-width: 800px; border-radius: 10px; position: relative; box-shadow: 0 8px 25px rgba(0,0,0,0.15); animation: slideIn 0.4s ease-out; }
+@keyframes slideIn { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.close-button { color: #aaa; position: absolute; top: 15px; right: 25px; font-size: 35px; font-weight: bold; cursor: pointer; }
+#modalDetalhesVeiculo .list-section, #modalDetalhesVeiculo .form-section { border: none; box-shadow: none; padding: 20px 0; }
+
+/* Notificações (antigo #notificacoes e #mensagem) */
+.message-area.info { background-color: #e7f3fe; border-color: #bde0fe; color: #0c5464; }
+.message-area.success { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
+.message-area.warning { background-color: #fff3cd; border-color: #ffeeba; color: #856404; }
+#notificacoes { position: fixed; top: 20px; right: 20px; min-width: 250px; z-index: 1050; border-radius: 5px; color: white; padding: 15px 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transform: translateX(120%); opacity: 0; transition: all 0.4s ease; }
+#notificacoes.show { transform: translateX(0); opacity: 1; }
+#notificacoes.success { background-color: var(--clean-success); }
+#notificacoes.error { background-color: var(--clean-danger); }
+#notificacoes.warning { background-color: var(--clean-warning); color: #333; }
+#notificacoes.info { background-color: var(--clean-primary); }
+
+
+/* =================================== */
+/* ==== NOVOS ESTILOS DE NAVEGAÇÃO === */
+/* =================================== */
+
+/* Ajusta o header principal de cada tela */
+.page-header {
+    text-align: center;
+    margin-bottom: 40px; /* Mais espaço abaixo do cabeçalho */
+    position: relative; /* Necessário para posicionar botões de 'voltar' */
+    padding: 0 80px; /* Garante que o título não fique sob os botões de canto */
+}
+
+/* Corpo principal do conteúdo da tela */
+.tela-content {
+    margin-bottom: 40px; /* Espaço entre o conteúdo e o botão de navegação inferior */
+}
+
+/* Footer de navegação (botões grandes na parte de baixo) */
+.tela-navigation {
+    text-align: center;
+    padding-top: 30px; /* Espaço acima do botão */
+    border-top: 1px solid var(--clean-border); /* Linha sutil separadora */
+    margin-top: 20px;
+}
+
+/* Botão de navegação maior e mais destacado */
+.button.button-large {
+    padding: 15px 30px; /* Mais padding */
+    font-size: 1.1em;   /* Fonte maior */
+    min-width: 280px;   /* Largura mínima maior */
+}
+.button.button-large i {
+    font-size: 0.9em;
+}
+
+
+/* Botão para voltar, posicionado no canto superior esquerdo */
+.nav-button-top-left {
+    position: absolute;
+    top: 50%; /* Centraliza verticalmente no header */
+    left: 0;
+    transform: translateY(-50%);
+    font-size: 0.9em !important; /* Mantém o botão menor e discreto */
+    padding: 8px 15px !important;
+    min-width: auto !important; /* Remove largura mínima */
+}
+
+
+/* Remove a borda inferior do h2 para um look mais clean */
+h2 {
+    border-bottom: none;
+}
+
+/* Remove margem absoluta de botões que estavam dentro do header */
+.page-header button {
+    position: static; /* Reset para o padrão */
+    transform: none;  /* Reset para o padrão */
+}
+
+/* Sobrescreve a nova regra para o botão de voltar */
+.nav-button-top-left {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+}
+
+/* Garante que os créditos no rodapé da previsão tenham o espaçamento correto */
+.tela-navigation-footer-credit {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    font-size: 0.9em;
+    color: var(--clean-text-secondary);
+    border-top: 1px solid var(--clean-border);
+}
+
+/* =========================================== */
+/* === ESTILO ESPECIAL P/ BOTÃO 'ADICIONAR' == */
+/* =========================================== */
+
+/* Remove a margem padrão para controlar o posicionamento com a div-wrapper */
+.form-section form button[type="submit"] {
+    margin: 0;
+}
+
+/* Novo container para centralizar o botão e dar espaçamento */
+.add-button-wrapper {
+    text-align: center;
+    margin-top: 25px; /* Adiciona espaço acima do botão */
+}
+
+.button-add-special {
+    padding: 15px 30px; /* Mais padding para um botão maior */
+    font-size: 1.1em;
+    font-weight: 700; /* Texto mais forte */
+    color: white;
+    background-color: #34d399; /* Um verde-azulado moderno e amigável */
+    background-image: linear-gradient(to right, #2563eb, #4f46e5); /* Gradiente de azul para roxo */
+    border: none;
+    border-radius: 8px; /* Cantos um pouco mais arredondados */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1), 0 2px 5px rgba(79, 70, 229, 0.3); /* Sombra mais elaborada */
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Transição mais suave */
+    text-transform: uppercase; /* Deixa o texto em maiúsculas para dar mais impacto */
+    letter-spacing: 1px; /* Espaçamento entre as letras */
+}
+
+/* Efeito de hover aprimorado */
+.button-add-special:hover {
+    transform: translateY(-3px) scale(1.02); /* Eleva o botão e aumenta um pouco */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15), 0 4px 10px rgba(79, 70, 229, 0.4);
+    filter: brightness(1.1); /* Deixa as cores um pouco mais vivas */
+}
+
+/* Efeito de clique */
+.button-add-special:active {
+    transform: translateY(0) scale(1);
+    filter: brightness(1);
+}
+
+
+/* =========================================== */
+/* === ESTILO ESPECIAL P/ BOTÃO 'VER PREVISÃO' == */
+/* =========================================== */
+
+/* Remove a margem padrão para o novo wrapper controlar */
+#busca-clima button {
+    margin: 0;
+}
+
+/* Novo container para o botão de busca, para flexibilidade */
+.weather-button-wrapper {
+    flex-shrink: 0; /* Impede que o botão encolha se o input crescer muito */
+}
+
+.button-weather-special {
+    padding: 14px 25px; /* Padding ajustado para alinhar com a altura do input */
+    font-size: 1em;
+    font-weight: 600;
+    color: white;
+    /* Um gradiente que lembra um céu de fim de tarde */
+    background-image: linear-gradient(to right, #2193b0, #6dd5ed); 
+    border: none;
+    border-radius: 8px; /* Mesma borda do input */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08), 0 2px 5px rgba(33, 147, 176, 0.2);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Efeito de hover */
+.button-weather-special:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12), 0 4px 10px rgba(33, 147, 176, 0.3);
+    filter: brightness(1.1);
+}
+
+/* Efeito de clique */
+.button-weather-special:active {
+    transform: translateY(0) scale(1);
+    filter: brightness(1);
+}
+
+
+/* =========================================== */
+/* === ESTILOS MODERNIZADOS P/ PREVISÃO TEMPO == */
+/* =========================================== */
+
+/* Define um fundo especial apenas para a tela de previsão */
+.tela#telaPrevisaoTempo {
+    background: linear-gradient(135deg, #6dd5ed, #2193b0);
+    padding: 30px;
+    margin: -30px -40px; /* Compensa o padding do .container principal */
+    border-radius: 8px;
+    color: #fff;
+}
+
+/* Ajustes no header para o novo fundo */
+.tela#telaPrevisaoTempo .page-header h1 {
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.tela#telaPrevisaoTempo .page-header p {
+    color: #e0f7fa;
+    opacity: 0.9;
+}
+.tela#telaPrevisaoTempo .nav-button-top-left {
+    background-color: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(5px);
+}
+.tela#telaPrevisaoTempo .nav-button-top-left:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+
+/* Seção de busca com efeito de vidro fosco */
+#busca-clima {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 20px;
+    border-radius: 12px;
+}
+
+#cidade-input {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: transparent;
+    color: var(--clean-text);
+    border-radius: 8px;
+}
+#cidade-input::placeholder {
+    color: #999;
+}
+
+
+/* Wrapper para a previsão diária com scroll horizontal */
+.previsao-wrapper {
+    overflow-x: auto; /* Habilita o scroll horizontal */
+    overflow-y: hidden;
+    padding: 10px 5px; /* Pequeno padding para a sombra do card não ser cortada */
+    -webkit-overflow-scrolling: touch; /* Melhora scroll em touch devices */
+}
+
+/* Estilização da barra de scroll (para Webkit browsers como Chrome/Safari) */
+.previsao-wrapper::-webkit-scrollbar {
+    height: 8px;
+}
+.previsao-wrapper::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+}
+.previsao-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 4px;
+}
+.previsao-wrapper::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+
+/* Container principal da previsão que ficará em linha */
+.container-previsao-dias {
+    display: flex; /* MUDANÇA CHAVE: Usar flex para manter em linha */
+    flex-wrap: nowrap; /* MUDANÇA CHAVE: Impede que os itens quebrem para a linha de baixo */
+    gap: 20px;
+    padding-bottom: 15px; /* Espaço para a barra de scroll */
+    min-width: 900px; /* Garante que haja espaço suficiente para o scroll funcionar em telas menores */
+}
+
+/* Card individual da previsão diária */
+.dia-previsao-item {
+    flex: 1 0 160px; /* flex-grow: 1, flex-shrink: 0, flex-basis: 160px. Isso garante tamanho consistente */
+    min-width: 160px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px; /* Bordas mais arredondadas */
+    padding: 20px 15px;
+    text-align: center;
+    color: #fff;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+}
+.dia-previsao-item:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.15);
+}
+
+.dia-previsao-item h3 { /* Dia da semana */
+    font-size: 1.1em;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 2px;
+}
+.data-curta {
+    font-size: 0.85em;
+    opacity: 0.8;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.dia-previsao-item img {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+}
+
+.dia-previsao-item .temperaturas {
+    font-size: 1.25em;
+    margin: 15px 0 10px 0;
+}
+.dia-previsao-item .temp-max {
+    font-weight: 700;
+}
+.dia-previsao-item .temp-min {
+    opacity: 0.8;
+}
+
+.dia-previsao-item .descricao-tempo {
+    font-size: 0.9em;
+    font-weight: 500;
+    text-transform: capitalize;
+    min-height: 38px;
+    opacity: 0.9;
+}
+
+
+/* Conselhos da Garagem */
+#conselhos-garagem {
+    margin-top: 40px;
+    padding-top: 25px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+#conselhos-garagem h3 {
+    color: #fff;
+    text-align: left;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+#conselhos-garagem ul { list-style-type: none; padding-left: 0; }
+#conselhos-garagem li {
+    background-color: rgba(0,0,0,0.15);
+    border-left: 5px solid #6dd5ed;
+    padding: 15px 20px;
+    margin-bottom: 12px;
+    border-radius: 0 8px 8px 0;
+    font-size: 1em;
+    color: #f0f4f8; /* Texto quase branco */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    backdrop-filter: blur(5px);
+}
+
+/* Garante que o H2 com o nome da cidade fique bonito */
+#previsao-tempo-resultado h2 {
+    color: #fff;
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    margin-bottom: 10px;
+}
+#previsao-tempo-resultado .nome-cidade {
+    font-weight: 700;
+}
+
+/* Spinner e erro */
+.loader-container {
+    text-align: center; margin: 40px 0;
+    /* Adicionar um fundo semi-transparente quando estiver carregando */
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(14, 82, 112, 0.5);
+    display: none; /* JS controla isso */
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    border-radius: 8px;
+}
+#error-message {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+/* ===== Limpeza e ajustes de CSS antigo ===== */
+/* Remova ou sobrescreva estas regras se existirem para evitar conflitos */
+.tela-navigation-footer-credit {
+    /* Integrado ao novo estilo de rodapé */
+    border-top: none; /* A tela toda tem o fundo de gradiente agora */
+    color: #e0f7fa;
+    margin-top: 20px;
+}
+
+/* =========================================== */
+/* === ESTILOS PARA SEÇÕES DA API DO BACKEND == */
+/* =========================================== */
+
+/* === Veículos em Destaque === */
+.destaque-wrapper {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+}
+.veiculo-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.veiculo-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+.veiculo-card-imagem {
+    width: 100%;
+    height: 180px;
+    object-fit: cover; /* Garante que a imagem preencha o espaço sem distorcer */
+}
+.veiculo-card-conteudo {
+    padding: 20px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+.veiculo-card-conteudo h3 {
+    margin: 0 0 10px 0;
+    font-size: 1.2em;
+    color: var(--clean-primary);
+}
+.veiculo-card-conteudo p {
+    font-size: 0.95em;
+    color: var(--clean-text-secondary);
+    line-height: 1.5;
+}
+
+/* === Lista de Serviços === */
+.servicos-lista {
+    list-style-type: none;
+    padding-left: 0;
+}
+.servico-item {
+    background-color: #f8f9fa;
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    border-left: 5px solid var(--clean-primary);
+    border-radius: 0 8px 8px 0;
+}
+.servico-item strong {
+    font-size: 1.1em;
+    color: #333;
+    display: block;
+    margin-bottom: 5px;
+}
+.servico-item span {
+    color: var(--clean-success);
+    font-weight: 600;
+    font-size: 0.9em;
+}
+
+/* === Lista de Dicas === */
+.dicas-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.dica-item {
+    background-color: #fff8e1;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #ffecb3;
+    color: #6d4c41;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.dica-item i.fa-lightbulb {
+    color: #f57c00;
+    font-size: 1.5em;
+}
