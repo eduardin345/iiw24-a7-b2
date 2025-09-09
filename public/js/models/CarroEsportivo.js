@@ -1,4 +1,5 @@
-// Classe CarroEsportivo (Herda de Veiculo)
+import { Veiculo } from './veiculo.js';
+
 class CarroEsportivo extends Veiculo {
     constructor(modelo, cor, turbo = false, id = null) {
         super(modelo, cor, id, 'CarroEsportivo');
@@ -7,28 +8,19 @@ class CarroEsportivo extends Veiculo {
 
     ativarTurbo() {
         if (this.turbo) {
-            exibirNotificacao('Turbo já está ativado!', 'warning');
-            return;
+            return; // Evita notificação se já está ativado
         }
-        if (!this.ligado) {
-            exibirNotificacao('Ligue o carro esportivo antes de ativar o turbo!', 'error');
-            return;
-        }
+         if (!this.ligado) {
+             throw new Error('Ligue o carro esportivo antes de ativar o turbo!');
+         }
         this.turbo = true;
-        exibirNotificacao('🚀 Turbo ativado!', 'success');
-        atualizarInfoVeiculoNoModal(this.id);
-        salvarGaragem();
     }
 
     desativarTurbo() {
         if (!this.turbo) {
-            exibirNotificacao('Turbo já está desativado!', 'warning');
             return;
         }
         this.turbo = false;
-        exibirNotificacao('Turbo desativado.', 'info');
-        atualizarInfoVeiculoNoModal(this.id);
-        salvarGaragem();
     }
 
     getInfoEspecificaHTML() {
@@ -41,3 +33,5 @@ class CarroEsportivo extends Veiculo {
         return json;
     }
 }
+
+export { CarroEsportivo };
