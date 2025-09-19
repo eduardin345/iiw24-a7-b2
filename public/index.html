@@ -23,15 +23,35 @@
         <!-- Área para notificações globais -->
         <div id="notificacoes"></div>
 
+        <!-- ============================== TELA 0: ENTRADA (NOVA TELA) ============================== -->
+        <div id="telaEntrada" class="tela tela-ativa">
+            <div class="entrada-container">
+                <header class="page-header">
+                    <h1>Bem-vindo à Garagem Inteligente</h1>
+                    <p>O que você gostaria de fazer primeiro?</p>
+                </header>
+                <main class="entrada-opcoes">
+                    <button onclick="mostrarTela('telaSimulador')" class="button button-primary button-large">
+                        <i class="fas fa-gamepad"></i> Ir para o Simulador
+                    </button>
+                    <button onclick="mostrarTela('telaGerenciamento')" class="button button-success button-large">
+                        <i class="fas fa-warehouse"></i> Acessar a Garagem
+                    </button>
+                </main>
+            </div>
+        </div>
+
         <!-- ============================== TELA 1: SIMULADOR ============================== -->
-        <div id="telaSimulador" class="tela tela-ativa">
+        <!-- ALTERADO: Removi a classe 'tela-ativa' daqui -->
+        <div id="telaSimulador" class="tela"> 
             <header class="page-header">
+                <!-- ALTERADO: O botão agora volta para a tela de entrada -->
+                <button onclick="mostrarTela('telaEntrada')" class="button nav-button-top-left"><i class="fas fa-arrow-left"></i> Voltar</button>
                 <h1>Simulador de Veículos</h1>
                 <h2>Escolha um veículo para um test drive rápido</h2>
             </header>
             <main class="tela-content">
                 <div id="simulador-veiculo-container" class="sim-container list-section"></div>
-                <!-- Mensagem de feedback do simulador -->
                 <div id="mensagem" class="message-area" style="display: none;"></div>
                 <div class="button-group">
                     <button onclick="selecionarVeiculoSimulador('Carro')" class="button button-primary"><i class="fas fa-car"></i> Carro</button>
@@ -39,21 +59,20 @@
                     <button onclick="selecionarVeiculoSimulador('Caminhao')" class="button button-primary"><i class="fas fa-truck"></i> Caminhão</button>
                 </div>
             </main>
+            <!-- ALTERADO: Removi o botão 'Ir para Garagem' pois a escolha agora é na tela de entrada -->
             <footer class="tela-navigation">
-                <button onclick="mostrarTela('telaGerenciamento')" class="button button-success button-large">
-                    <i class="fas fa-garage"></i> Ir para a Garagem Completa
-                </button>
+                <!-- O botão de ir para a garagem foi movido para a tela de entrada principal -->
             </footer>
         </div>
 
         <!-- ============================== TELA 2: GERENCIAMENTO ============================== -->
         <div id="telaGerenciamento" class="tela">
             <header class="page-header">
-                <button onclick="mostrarTela('telaSimulador')" class="button nav-button-top-left"><i class="fas fa-arrow-left"></i> Voltar</button>
+                <!-- ALTERADO: O botão agora volta para a tela de entrada -->
+                <button onclick="mostrarTela('telaEntrada')" class="button nav-button-top-left"><i class="fas fa-arrow-left"></i> Voltar</button>
                 <h1>Garagem Inteligente</h1>
             </header>
             <main class="tela-content">
-                <!-- Seções organizadas como uma grade para melhor responsividade -->
                 <div class="gerenciamento-grid">
                     <div class="form-section span-2">
                         <h3><i class="fas fa-plus-circle icon-green"></i> Adicionar Novo Veículo</h3>
@@ -83,27 +102,22 @@
                             <div class="add-button-wrapper"><button type="submit" class="button-add-special"><i class="fas fa-plus"></i> Adicionar à Garagem</button></div>
                         </form>
                     </div>
-
                     <div class="list-section span-2">
                         <h2><i class="fas fa-warehouse icon-blue"></i> Minha Garagem</h2>
                         <div id="listaVeiculos"><p>Carregando veículos...</p></div>
                     </div>
-    
                     <div class="list-section span-2">
                         <h2><i class="fas fa-star icon-yellow"></i> Veículos em Destaque</h2>
                         <div id="veiculos-destaque-container" class="destaque-wrapper"><p>Carregando destaques...</p></div>
                     </div>
-    
                     <div class="list-section">
                         <h2><i class="fas fa-tools icon-gray"></i> Nossos Serviços</h2>
                         <ul id="servicos-oferecidos-lista" class="servicos-lista"><p>Carregando serviços...</p></ul>
                     </div>
-    
                     <div class="list-section">
                         <h2><i class="fas fa-lightbulb icon-orange"></i> Dicas de Manutenção</h2>
                         <div id="dicas-manutencao-container" class="dicas-lista"><p>Carregando dicas...</p></div>
                     </div>
-    
                     <div class="list-section span-2">
                         <h2><i class="far fa-calendar-alt icon-green"></i> Agendamentos Futuros</h2>
                         <div id="listaAgendamentosFuturos"><p>Nenhum agendamento futuro.</p></div>
@@ -117,8 +131,8 @@
         
         <!-- ============================== TELA 3: PREVISÃO DO TEMPO ============================== -->
         <div id="telaPrevisaoTempo" class="tela">
-             <!-- (A estrutura da tela de previsão já está excelente e não precisa de mudanças) -->
              <header class="page-header">
+                <!-- ALTERADO: O botão volta para a Garagem, pois é um subtela da garagem -->
                 <button onclick="mostrarTela('telaGerenciamento')" class="button nav-button-top-left"><i class="fas fa-arrow-left"></i> Voltar</button>
                 <h1>Previsão do Tempo</h1>
                 <p>Planeje com precisão, para cada dia e cada hora!</p>
@@ -135,16 +149,14 @@
            </main>
            <footer class="tela-navigation-footer-credit"><p>Previsão fornecida por OpenWeatherMap</p></footer>
         </div>
-
     </div>
 
-    <!-- ============================== MODAL DETALHES DO VEÍCULO ============================== -->
+    <!-- MODAL (Sem alterações) -->
     <div id="modalDetalhesVeiculo" class="modal">
         <div class="modal-content">
             <span class="close-button" onclick="fecharModal()">×</span>
             <h2 id="modalTituloVeiculo"></h2>
             <div id="modalInfoVeiculo" class="info-veiculo"></div>
-            
             <div class="modal-grid">
                 <div class="list-section">
                     <h3 class="modal-h3"><i class="fas fa-wrench icon-gray"></i> Histórico de Manutenção</h3>
@@ -165,8 +177,8 @@
         </div>
     </div>
     
-    <!-- ============================== SCRIPTS ============================== -->
-    <!-- Carregados no final para melhor performance -->
+    <!-- SCRIPTS (Sem alterações) -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="js/models/Manutencao.js" type="module"></script>
     <script src="js/models/Veiculo.js" type="module"></script>
     <script src="js/models/Carro.js" type="module"></script>

@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import axios from 'axios';
-import Veiculo from './models/Veiculo.js';
+import Veiculo from './models/veiculo.js';
 
 // --- CONFIGURAÇÃO INICIAL ---
 dotenv.config();

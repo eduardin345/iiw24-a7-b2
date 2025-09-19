@@ -6,7 +6,6 @@ import { Caminhao } from './models/Caminhao.js';
 // === VARIÁVEIS GLOBAIS ===
 let garagem = [];
 let veiculoSimuladorAtivo = null;
-// CORRIGIDO: URL de produção correta.
 const backendUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
     ? 'http://localhost:3001' 
     : 'https://iiw24-a7-b2.onrender.com';
@@ -17,7 +16,6 @@ const modal = document.getElementById('modalDetalhesVeiculo');
 // === PASSO 1: DECLARAR TODAS AS FUNÇÕES QUE SERÃO EXPOSTAS (A CORREÇÃO PRINCIPAL) ===
 // ========================================================================================
 
-// Estas funções SÃO AS ÚNICAS que o HTML poderá "ver" e chamar via onclick.
 window.mostrarTela = (idTela) => {
     document.querySelectorAll('.tela').forEach(tela => tela.classList.remove('tela-ativa'));
     const telaAtiva = document.getElementById(idTela);
@@ -26,16 +24,17 @@ window.mostrarTela = (idTela) => {
     }
 };
 
+// ALTERADO: Agora cada veículo do simulador tem sua própria imagem.
 window.selecionarVeiculoSimulador = (tipo) => {
     switch (tipo) {
         case 'Carro':
-            veiculoSimuladorAtivo = new Carro('Ford Ka', 'Prata');
+            veiculoSimuladorAtivo = new Carro('Mustang GT', 'Vermelho', null, 'Carro', 'assets/img/sim-carro.png');
             break;
         case 'CarroEsportivo':
-            veiculoSimuladorAtivo = new CarroEsportivo('Corvette', 'Amarelo');
+            veiculoSimuladorAtivo = new CarroEsportivo('Porsche 911 GT3', 'Branco', null, 'CarroEsportivo', 'assets/img/sim-carro-esportivo.png');
             break;
         case 'Caminhao':
-            veiculoSimuladorAtivo = new Caminhao('Volvo FH', 'Azul', 25000);
+            veiculoSimuladorAtivo = new Caminhao('Optimus Prime', 'Vermelho e Azul', 25000, null, 'Caminhao', 'assets/img/sim-caminhao.png');
             break;
     }
     renderizarSimulador();
@@ -49,7 +48,7 @@ window.acaoSimulador = (acao, param = null) => {
     try {
         const metodo = veiculoSimuladorAtivo[acao];
         if (typeof metodo === 'function') {
-            metodo.call(veiculoSimuladorAtivo, param); // Executa a ação
+            metodo.call(veiculoSimuladorAtivo, param);
             window.exibirNotificacao(`Ação '${acao}' executada.`, 'success');
         } else {
             throw new Error(`Ação '${acao}' não encontrada.`);
@@ -100,7 +99,6 @@ window.removerVeiculo = async (veiculoId) => {
     }
 };
 
-// CORRIGIDO: Criei a função que estava faltando no Caminhao.js
 window.atualizarInfoVeiculoNoModal = (veiculoId) => {
     const veiculo = garagem.find(v => v.id === veiculoId);
     const idNoModal = document.getElementById('manutencaoVeiculoId').value;
@@ -127,7 +125,7 @@ function criarVeiculoDeJSON(json) {
     if (!json || !json.tipoVeiculo) return null;
     let veiculo;
     try {
-        const id = json._id || json.id; // Compatível com MongoDB e frontend
+        const id = json._id || json.id;
         switch (json.tipoVeiculo) {
             case 'Carro': veiculo = new Carro(json.modelo, json.cor, id); break;
             case 'CarroEsportivo': veiculo = new CarroEsportivo(json.modelo, json.cor, json.turbo, id); break;
@@ -151,7 +149,7 @@ async function carregarGaragem() {
         const data = await response.json();
         garagem = data.map(criarVeiculoDeJSON).filter(v => v);
         renderizarGaragem();
-        renderizarAgendamentosFuturos(); // Chamada após a garagem ser carregada
+        renderizarAgendamentosFuturos();
     } catch (error) {
         container.innerHTML = `<p style="color:red; text-align:center;">${error.message}</p>`;
         console.error("Erro ao carregar garagem:", error);
@@ -161,7 +159,6 @@ async function carregarGaragem() {
 function renderizarGaragem() {
     const container = document.getElementById('listaVeiculos');
     container.innerHTML = garagem.length === 0 ? '<p>Sua garagem está vazia.</p>' : '';
-    // Ordena os veículos mais recentes primeiro
     garagem.sort((a, b) => (b.id > a.id) ? 1 : -1);
     garagem.forEach(veiculo => {
         const itemDiv = document.createElement('div');
@@ -176,13 +173,14 @@ function renderizarGaragem() {
     });
 }
 
+// ALTERADO: Agora a imagem é dinâmica, baseada no veículo ativo.
 function renderizarSimulador() {
     const container = document.getElementById('simulador-veiculo-container');
     if (!veiculoSimuladorAtivo) {
         container.innerHTML = '<h2>Selecione um veículo para começar o test drive.</h2>';
         return;
     }
-    const imagemSrc = `assets/img/car-placeholder.png`;
+    const imagemSrc = veiculoSimuladorAtivo.imagemUrl; // Usa a imagem do objeto
     container.innerHTML = `
         <img src="${imagemSrc}" alt="Imagem do Veículo" class="sim-vehicle-image">
         <div class="info-box">${veiculoSimuladorAtivo.exibirInformacoesCompletaHTML()}</div>
@@ -200,7 +198,6 @@ function renderizarHistoricoManutencaoModal(veiculoId) {
     document.getElementById('modalHistoricoManutencao').innerHTML = veiculo ? veiculo.getHistoricoHTML() : '<p>Veículo não encontrado.</p>';
 }
 
-// CORRIGIDO: Lógica implementada para buscar e exibir agendamentos.
 function renderizarAgendamentosFuturos() {
     const container = document.getElementById('listaAgendamentosFuturos');
     const hoje = new Date();
@@ -214,7 +211,7 @@ function renderizarAgendamentosFuturos() {
         });
     });
 
-    agendamentos.sort((a, b) => a.data - b.data); // Ordena por data
+    agendamentos.sort((a, b) => a.data - b.data);
 
     if (agendamentos.length === 0) {
         container.innerHTML = '<p>Nenhum agendamento futuro.</p>';
@@ -224,7 +221,6 @@ function renderizarAgendamentosFuturos() {
     container.innerHTML = '<ul>' + agendamentos.map(m => `<li>${m.formatar(true, m.veiculo.modelo)}</li>`).join('') + '</ul>';
 }
 
-// CORRIGIDO: Função fetchData e renderizadores do Arsenal de Dados
 async function fetchData(endpoint, containerId, renderer) {
     const container = document.getElementById(containerId);
     try {
@@ -272,19 +268,15 @@ function renderizarDicas(data, container) {
 // === PASSO 3: INICIALIZAÇÃO DA APLICAÇÃO (ENTRY POINT) ===
 // ==========================================================
 document.addEventListener('DOMContentLoaded', () => {
-    // Define o estado inicial da UI
-    window.mostrarTela('telaSimulador');
+    
     window.selecionarVeiculoSimulador('Carro');
 
-    // Carrega todos os dados dinâmicos do backend
     carregarGaragem();
-    // CORRIGIDO: Chamadas fetchData para o arsenal de dados
     fetchData('veiculos-destaque', 'veiculos-destaque-container', renderizarDestaques);
     fetchData('servicos-oferecidos', 'servicos-oferecidos-lista', renderizarServicos);
     fetchData('dicas-manutencao', 'dicas-manutencao-container', renderizarDicas);
 
 
-    // Configura os listeners dos formulários
     const formManutencao = document.getElementById('formManutencao');
     if (formManutencao) {
         formManutencao.addEventListener('submit', async (event) => {
@@ -320,7 +312,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // CORRIGIDO: Listener para o form de Adicionar Veículo...
     const formAdicionarVeiculo = document.getElementById('formAdicionarVeiculo');
     if(formAdicionarVeiculo) {
         formAdicionarVeiculo.addEventListener('submit', async (event) => {
@@ -345,9 +336,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 if(!response.ok) throw new Error('Falha ao adicionar veículo. Verifique os dados.');
 
-                await carregarGaragem(); // Recarrega a garagem para exibir o novo veículo
+                await carregarGaragem();
                 window.exibirNotificacao('Veículo adicionado com sucesso!', 'success');
-                event.target.reset(); // Limpa o formulário
+                event.target.reset();
 
             } catch(e) {
                 window.exibirNotificacao(e.message, 'error');
@@ -355,13 +346,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Listener para mostrar/esconder o campo de capacidade de carga
     document.getElementById('tipoVeiculo').addEventListener('change', (e) => {
         const campoCarga = document.getElementById('campoCapacidadeCarga');
         campoCarga.style.display = e.target.value === 'Caminhao' ? 'flex' : 'none';
     });
 
-    // Fecha o modal ao clicar fora dele
     window.onclick = (event) => {
         if (event.target == modal) {
             window.fecharModal();

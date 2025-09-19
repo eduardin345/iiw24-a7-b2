@@ -232,7 +232,7 @@ input:focus, select:focus, textarea:focus {
 .modal {
     position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
     overflow: auto; background-color: rgba(17, 24, 39, 0.6);
-    display: none; align-items: center; justify-content: center;
+    display: none; align-items: center; justify-content: center; padding: 20px;
 }
 .modal-content {
     background-color: var(--color-surface); margin: auto; padding: 40px;
@@ -250,11 +250,12 @@ input:focus, select:focus, textarea:focus {
 .modal .list-section, .modal .form-section { box-shadow: none; padding: 0; border: none; }
 .modal-h3 { font-size: 1.2rem; border-bottom: none; margin-bottom: 15px; }
 .modal-button { width: 100%; justify-content: center; padding: 12px; font-size: 1rem; }
+.info-veiculo { line-height: 1.8; }
 
 /* Previsão do Tempo */
 #telaPrevisaoTempo .page-header { color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.2); }
 #telaPrevisaoTempo .page-header p { color: #fff; opacity: 0.9; }
-/* Seus outros estilos de previsão de tempo já eram bons, eles se integrarão bem aqui */
+.button-weather-special { background-image: linear-gradient(to right, #2563eb, #1d4ed8); color: white; }
 
 /* Notificações */
 #notificacoes {
@@ -270,145 +271,191 @@ input:focus, select:focus, textarea:focus {
 #notificacoes.info { background-color: var(--color-primary); }
 
 /* ==========================================================
-   6. MEDIA QUERIES PARA RESPONSIVIDADE
-   ========================================================== */
-@media (max-width: 768px) {
-    .gerenciamento-grid { grid-template-columns: 1fr; } /* Pilha as colunas */
-    .span-2 { grid-column: span 1; }
-    .page-header h1 { font-size: 1.8rem; }
-    .form-grid { grid-template-columns: 1fr; }
-    .modal-grid { grid-template-columns: 1fr; }
-    .main-container { padding: 10px; }
-}
-/* ==========================================================
-   ==========================================================
-   6. ESTILOS ESPECIAIS PARA A TELA DE PREVISÃO DO TEMPO
-   ==========================================================
+   6. ESTILOS DA TELA DE PREVISÃO DO TEMPO
    ========================================================== */
 
-/* Define um fundo gradiente de céu noturno, mais sofisticado */
 .tela#telaPrevisaoTempo {
     background: linear-gradient(135deg, #0f172a, #374151); /* De azul-marinho a cinza-escuro */
-    padding: 40px; /* Mais espaço interno */
-    margin: -40px;
+    padding: 40px;
     border-radius: var(--border-radius);
     color: #e5e7eb; /* Texto quase branco para melhor contraste */
     overflow: hidden;
 }
 
-/* Header com mais impacto e espaçamento */
-.tela#telaPrevisaoTempo .page-header {
-    margin-bottom: 50px; /* Mais espaço abaixo do título */
-}
-.tela#telaPrevisaoTempo .page-header h1 {
-    color: #fff;
-    font-size: 2.5rem; /* Título maior */
-    text-shadow: 0 2px 5px rgba(0,0,0,0.3);
-}
-.tela#telaPrevisaoTempo .page-header p {
-    color: #9ca3af; /* Cinza mais claro para o subtítulo */
-    font-size: 1.2rem;
-    max-width: 500px;
-    margin: 10px auto 0;
-}
-.tela#telaPrevisaoTempo .nav-button-top-left {
-    background-color: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(8px);
-    color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-/* Seção de busca aprimorada */
 #busca-clima {
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 25px; /* Mais padding */
+    padding: 25px;
     border-radius: var(--border-radius);
     display: flex;
-    gap: 20px; /* Mais espaço entre o input e o botão */
+    gap: 20px;
 }
 #cidade-input {
     background: rgba(255, 255, 255, 0.95);
     border-color: transparent;
     color: var(--color-text-dark);
     font-size: 1.1rem;
-    flex-grow: 1; /* Faz o input ocupar o espaço disponível */
+    flex-grow: 1;
 }
 
-/* Wrapper da previsão com mais "ar" */
 .previsao-wrapper {
     overflow-x: auto;
-    margin-top: 40px; /* Espaço entre a busca e os resultados */
+    margin-top: 40px;
     padding-bottom: 20px;
 }
-/* Estilização da barra de scroll mais sutil */
 .previsao-wrapper::-webkit-scrollbar { height: 10px; }
 .previsao-wrapper::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); border-radius: 5px; }
 .previsao-wrapper::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 5px; }
-.previsao-wrapper::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.5); }
 
-/* Container que mantém os cards em linha */
 .container-previsao-dias {
     display: flex;
     flex-wrap: nowrap;
-    gap: 25px; /* MAIS ESPAÇO ENTRE OS CARDS */
+    gap: 25px;
     padding-top: 10px;
     min-width: fit-content;
 }
 
-/* Card individual da previsão diária redesenhado */
 .dia-previsao-item {
-    flex: 0 0 170px; /* Um pouco mais largo */
+    flex: 0 0 170px;
     background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
     backdrop-filter: blur(15px);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: var(--border-radius);
     padding: 25px 20px;
     text-align: center;
-    color: #fff;
     transition: all 0.3s ease;
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 250px; /* Altura fixa para alinhar verticalmente */
 }
-.dia-previsao-item:hover { transform: translateY(-8px); background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.05)); }
 
+.dia-previsao-item:hover { transform: translateY(-8px); background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.05)); }
 .dia-previsao-item h3 { font-size: 1.2rem; font-weight: 500; }
 .data-curta { font-size: 0.9rem; opacity: 0.6; }
-
-.dia-previsao-item .weather-icon-daily {
-    width: 90px;
-    height: 90px;
-    margin: 10px auto;
-    filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.3));
-}
+.dia-previsao-item .weather-icon-daily { width: 90px; height: 90px; margin: 10px auto; filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.3)); }
 .dia-previsao-item .temperaturas { font-size: 1.4rem; font-weight: 700; }
-.dia-previsao-item .temp-min { opacity: 0.7; margin-left: 5px; }
 .dia-previsao-item .descricao-tempo { font-size: 0.95rem; text-transform: capitalize; opacity: 0.8; }
 
-/* Conselhos da Garagem aprimorados */
 #conselhos-garagem { margin-top: 50px; padding-top: 30px; border-top: 1px solid rgba(255, 255, 255, 0.2); }
 #conselhos-garagem h3 { font-size: 1.5rem; color: #fff; text-align: left; margin-bottom: 20px; }
 #conselhos-garagem ul { list-style-type: none; padding-left: 0; display: flex; flex-direction: column; gap: 15px; }
-#conselhos-garagem li {
-    background-color: rgba(0,0,0,0.2);
-    border-left: 5px solid var(--color-primary); /* Destaque azul */
-    padding: 20px;
-    border-radius: 0 8px 8px 0;
-    font-size: 1.05rem;
+#conselhos-garagem li { background-color: rgba(0,0,0,0.2); border-left: 5px solid var(--color-primary); padding: 20px; border-radius: 0 8px 8px 0; }
+.tela-navigation-footer-credit { border-top: none; color: #9ca3af; text-align: center; }
+.loader-container { display: none; }
+
+
+/* ==========================================================
+   7. ESTILOS DA TELA DE ENTRADA E CORREÇÃO DO MODAL
+   ========================================================== */
+
+#telaEntrada {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh; /* Faz a tela de entrada ocupar a maior parte da altura da tela */
 }
 
-#previsao-tempo-resultado h2 { margin-bottom: 20px; font-size: 1.6rem; }
-#previsao-tempo-resultado .nome-cidade {
-    font-weight: 700;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 4px 10px;
-    border-radius: 8px;
+.entrada-container {
+    background-color: var(--color-surface);
+    padding: 50px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-hover);
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
 }
 
-.loader-container { background: rgba(15, 23, 42, 0.6); }
-#error-message { background-color: #f8d7da; border: none; color: #721c24; }
-.tela-navigation-footer-credit { border-top: none; color: #9ca3af; }
+.entrada-opcoes {
+    display: flex;
+    justify-content: center;
+    gap: 20px; /* Espaço entre os botões */
+    margin-top: 20px;
+    flex-wrap: wrap; /* Para telas pequenas */
+}
+
+.entrada-opcoes .button-large {
+    padding: 18px 35px;
+    font-size: 1.1rem;
+    min-width: 220px; /* Largura mínima para manter a consistência */
+}
+
+/* --- CORREÇÃO DO FORMULÁRIO DO MODAL --- */
+#formManutencao {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Adiciona um espaçamento vertical consistente entre os campos */
+}
+
+.form-group-modal {
+    display: flex;
+    flex-direction: column; /* Força o label a ficar em cima do input */
+}
+
+.form-group-modal label {
+    margin-bottom: 6px; /* Pequeno espaço entre o label e o campo */
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--color-text-light);
+}
+
+#formManutencao input,
+#formManutencao textarea {
+    width: 100%;
+}
+
+.modal-button {
+    margin-top: 10px; /* Espaço extra antes do botão de salvar */
+}
+
+/* ==========================================================
+   8. MEDIA QUERIES PARA RESPONSIVIDADE
+   ========================================================== */
+@media (max-width: 768px) {
+    .gerenciamento-grid { grid-template-columns: 1fr; }
+    .span-2 { grid-column: span 1; }
+    .page-header h1 { font-size: 1.8rem; }
+    .form-grid { grid-template-columns: 1fr; }
+    .modal-grid { grid-template-columns: 1fr; }
+    .main-container { padding: 10px; }
+    .entrada-opcoes { flex-direction: column; align-items: center; }
+}
+
+/* ==========================================================
+   ESTILOS ADICIONAIS PARA O SIMULADOR
+   ========================================================== */
+.sim-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.sim-vehicle-image {
+    max-width: 80%;
+    height: auto;
+    max-height: 250px;
+    border-radius: 10px;
+    object-fit: contain; /* Garante que a imagem inteira apareça sem distorção */
+}
+
+.info-box {
+    text-align: left;
+    width: 100%;
+    line-height: 1.8;
+}
+
+.button-group-simulador {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
+.button-group-simulador .button {
+    background-color: #f3f4f6;
+    color: var(--color-text-dark);
+}
+
+.button-group-simulador .button:hover {
+    background-color: #e5e7eb;
+    transform: translateY(0);
+}
