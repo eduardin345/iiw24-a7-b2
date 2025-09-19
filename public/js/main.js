@@ -6,7 +6,10 @@ import { Caminhao } from './models/Caminhao.js';
 // === VARIÁVEIS GLOBAIS ===
 let garagem = [];
 let veiculoSimuladorAtivo = null;
-const backendUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:3001' : 'https://sua-url-de-deploy.com';
+// CORRIGIDO: URL de produção correta.
+const backendUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+    ? 'http://localhost:3001' 
+    : 'https://iiw24-a7-b2.onrender.com';
 const modal = document.getElementById('modalDetalhesVeiculo');
 
 
@@ -40,19 +43,19 @@ window.selecionarVeiculoSimulador = (tipo) => {
 
 window.acaoSimulador = (acao, param = null) => {
     if (!veiculoSimuladorAtivo) {
-        exibirNotificacao('Nenhum veículo no simulador.', 'error');
+        window.exibirNotificacao('Nenhum veículo no simulador.', 'error');
         return;
     }
     try {
         const metodo = veiculoSimuladorAtivo[acao];
         if (typeof metodo === 'function') {
             metodo.call(veiculoSimuladorAtivo, param); // Executa a ação
-            exibirNotificacao(`Ação '${acao}' executada.`, 'success');
+            window.exibirNotificacao(`Ação '${acao}' executada.`, 'success');
         } else {
             throw new Error(`Ação '${acao}' não encontrada.`);
         }
     } catch (e) {
-        exibirNotificacao(e.message, 'error');
+        window.exibirNotificacao(e.message, 'error');
     }
     renderizarSimulador();
 };
@@ -66,7 +69,7 @@ window.fecharModal = () => {
 window.abrirModalDetalhes = (veiculoId) => {
     const veiculo = garagem.find(v => v.id === veiculoId);
     if (!veiculo) {
-        exibirNotificacao('Veículo não encontrado.', 'error');
+        window.exibirNotificacao('Veículo não encontrado.', 'error');
         return;
     }
     
@@ -75,7 +78,7 @@ window.abrirModalDetalhes = (veiculoId) => {
     document.getElementById('manutencaoVeiculoId').value = veiculo.id;
     
     renderizarHistoricoManutencaoModal(veiculo.id);
-    flatpickr("#manutencaoData", { enableTime: true, dateFormat: "Y-m-d H:i", minDate: "today", locale: "pt" });
+    flatpickr("#manutencaoData", { enableTime: true, dateFormat: "Y-m-d H:i", minDate: "today" });
     if (modal) {
         modal.style.display = 'flex';
     }
@@ -90,19 +93,27 @@ window.removerVeiculo = async (veiculoId) => {
     try {
         const response = await fetch(`${backendUrl}/api/veiculos/${veiculoId}`, { method: 'DELETE' });
         if (!response.ok) throw new Error('Falha ao remover do servidor.');
-        exibirNotificacao('Veículo removido com sucesso!', 'success');
+        window.exibirNotificacao('Veículo removido com sucesso!', 'success');
         await carregarGaragem();
     } catch (error) {
-        exibirNotificacao(error.message, 'error');
+        window.exibirNotificacao(error.message, 'error');
+    }
+};
+
+// CORRIGIDO: Criei a função que estava faltando no Caminhao.js
+window.atualizarInfoVeiculoNoModal = (veiculoId) => {
+    const veiculo = garagem.find(v => v.id === veiculoId);
+    const idNoModal = document.getElementById('manutencaoVeiculoId').value;
+    if (veiculo && modal.style.display === 'flex' && veiculo.id === idNoModal) {
+        document.getElementById('modalInfoVeiculo').innerHTML = veiculo.exibirInformacoesCompletaHTML();
     }
 };
 
 // ==========================================================
 // === PASSO 2: FUNÇÕES INTERNAS DA APLICAÇÃO ===
-// (Estas funções são chamadas apenas por outras funções JS, não pelo HTML)
 // ==========================================================
 
-function exibirNotificacao(mensagem, tipo = 'info', duracaoMs = 4000) {
+window.exibirNotificacao = (mensagem, tipo = 'info', duracaoMs = 4000) => {
     const div = document.getElementById('notificacoes');
     if (!div) return;
     if (div.timeoutId) clearTimeout(div.timeoutId);
@@ -110,13 +121,13 @@ function exibirNotificacao(mensagem, tipo = 'info', duracaoMs = 4000) {
     div.className = '';
     div.classList.add(tipo, 'show');
     div.timeoutId = setTimeout(() => div.classList.remove('show'), duracaoMs);
-}
+};
 
 function criarVeiculoDeJSON(json) {
     if (!json || !json.tipoVeiculo) return null;
     let veiculo;
     try {
-        const id = json._id || json.id;
+        const id = json._id || json.id; // Compatível com MongoDB e frontend
         switch (json.tipoVeiculo) {
             case 'Carro': veiculo = new Carro(json.modelo, json.cor, id); break;
             case 'CarroEsportivo': veiculo = new CarroEsportivo(json.modelo, json.cor, json.turbo, id); break;
@@ -140,7 +151,7 @@ async function carregarGaragem() {
         const data = await response.json();
         garagem = data.map(criarVeiculoDeJSON).filter(v => v);
         renderizarGaragem();
-        renderizarAgendamentosFuturos();
+        renderizarAgendamentosFuturos(); // Chamada após a garagem ser carregada
     } catch (error) {
         container.innerHTML = `<p style="color:red; text-align:center;">${error.message}</p>`;
         console.error("Erro ao carregar garagem:", error);
@@ -150,6 +161,8 @@ async function carregarGaragem() {
 function renderizarGaragem() {
     const container = document.getElementById('listaVeiculos');
     container.innerHTML = garagem.length === 0 ? '<p>Sua garagem está vazia.</p>' : '';
+    // Ordena os veículos mais recentes primeiro
+    garagem.sort((a, b) => (b.id > a.id) ? 1 : -1);
     garagem.forEach(veiculo => {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'vehicle-item';
@@ -169,7 +182,7 @@ function renderizarSimulador() {
         container.innerHTML = '<h2>Selecione um veículo para começar o test drive.</h2>';
         return;
     }
-    const imagemSrc = `assets/img/car-placeholder.png`; // Use uma imagem placeholder
+    const imagemSrc = `assets/img/car-placeholder.png`;
     container.innerHTML = `
         <img src="${imagemSrc}" alt="Imagem do Veículo" class="sim-vehicle-image">
         <div class="info-box">${veiculoSimuladorAtivo.exibirInformacoesCompletaHTML()}</div>
@@ -187,12 +200,72 @@ function renderizarHistoricoManutencaoModal(veiculoId) {
     document.getElementById('modalHistoricoManutencao').innerHTML = veiculo ? veiculo.getHistoricoHTML() : '<p>Veículo não encontrado.</p>';
 }
 
+// CORRIGIDO: Lógica implementada para buscar e exibir agendamentos.
 function renderizarAgendamentosFuturos() {
-    // Implementar a lógica de renderizar agendamentos
+    const container = document.getElementById('listaAgendamentosFuturos');
+    const hoje = new Date();
+    const agendamentos = [];
+
+    garagem.forEach(veiculo => {
+        veiculo.historicoManutencao.forEach(manutencao => {
+            if (manutencao.data > hoje) {
+                agendamentos.push({ ...manutencao, veiculo: veiculo });
+            }
+        });
+    });
+
+    agendamentos.sort((a, b) => a.data - b.data); // Ordena por data
+
+    if (agendamentos.length === 0) {
+        container.innerHTML = '<p>Nenhum agendamento futuro.</p>';
+        return;
+    }
+    
+    container.innerHTML = '<ul>' + agendamentos.map(m => `<li>${m.formatar(true, m.veiculo.modelo)}</li>`).join('') + '</ul>';
 }
 
-async function fetchData(endpoint, container, renderer) {
-    // Implementar a lógica de busca e renderização do arsenal de dados
+// CORRIGIDO: Função fetchData e renderizadores do Arsenal de Dados
+async function fetchData(endpoint, containerId, renderer) {
+    const container = document.getElementById(containerId);
+    try {
+        const response = await fetch(`${backendUrl}/api/garagem/${endpoint}`);
+        if (!response.ok) throw new Error('Falha ao carregar dados do servidor.');
+        const data = await response.json();
+        renderer(data, container);
+    } catch (error) {
+        container.innerHTML = `<p style="color:red;">${error.message}</p>`;
+    }
+}
+
+function renderizarDestaques(data, container) {
+    container.innerHTML = data.map(veiculo => `
+        <div class="veiculo-card">
+            <img src="${veiculo.imagemUrl}" alt="${veiculo.modelo}" class="veiculo-card-imagem">
+            <div class="veiculo-card-conteudo">
+                <h3>${veiculo.modelo} (${veiculo.ano})</h3>
+                <p>${veiculo.destaque}</p>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderizarServicos(data, container) {
+    container.innerHTML = data.map(servico => `
+        <li class="servico-item">
+            <strong>${servico.nome}</strong>
+            <p>${servico.descricao}</p>
+            <span>Preço Estimado: ${servico.precoEstimado}</span>
+        </li>
+    `).join('');
+}
+
+function renderizarDicas(data, container) {
+    container.innerHTML = data.map(item => `
+        <div class="dica-item">
+            <i class="fas fa-lightbulb"></i>
+            <p>${item.dica}</p>
+        </div>
+    `).join('');
 }
 
 // ==========================================================
@@ -205,20 +278,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Carrega todos os dados dinâmicos do backend
     carregarGaragem();
-    // Adicionar aqui as chamadas fetchData para o arsenal de dados
+    // CORRIGIDO: Chamadas fetchData para o arsenal de dados
+    fetchData('veiculos-destaque', 'veiculos-destaque-container', renderizarDestaques);
+    fetchData('servicos-oferecidos', 'servicos-oferecidos-lista', renderizarServicos);
+    fetchData('dicas-manutencao', 'dicas-manutencao-container', renderizarDicas);
+
 
     // Configura os listeners dos formulários
     const formManutencao = document.getElementById('formManutencao');
-    if(formManutencao) {
+    if (formManutencao) {
         formManutencao.addEventListener('submit', async (event) => {
             event.preventDefault();
             const veiculoId = document.getElementById('manutencaoVeiculoId').value;
             const dados = {
                 data: document.getElementById('manutencaoData').value,
                 tipo: document.getElementById('manutencaoTipo').value,
-                custo: document.getElementById('manutencaoCusto').value,
+                custo: parseFloat(document.getElementById('manutencaoCusto').value),
                 descricao: document.getElementById('manutencaoDescricao').value
             };
+
             try {
                 const response = await fetch(`${backendUrl}/api/veiculos/${veiculoId}/manutencoes`, {
                     method: 'POST',
@@ -228,21 +306,60 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(!response.ok) throw new Error('Falha ao salvar manutenção.');
                 const veiculoAtualizadoJSON = await response.json();
                 
-                // Atualiza a garagem local e a UI
                 const index = garagem.findIndex(v => v.id === veiculoId);
                 if(index > -1) garagem[index] = criarVeiculoDeJSON(veiculoAtualizadoJSON);
                 
                 renderizarHistoricoManutencaoModal(veiculoId);
                 renderizarAgendamentosFuturos();
-                exibirNotificacao('Manutenção salva com sucesso!', 'success');
+                window.exibirNotificacao('Manutenção salva com sucesso!', 'success');
                 event.target.reset();
 
             } catch(e) {
-                exibirNotificacao(e.message, 'error');
+                window.exibirNotificacao(e.message, 'error');
             }
         });
     }
-    // Adicionar aqui o listener para o form de Adicionar Veículo...
+
+    // CORRIGIDO: Listener para o form de Adicionar Veículo...
+    const formAdicionarVeiculo = document.getElementById('formAdicionarVeiculo');
+    if(formAdicionarVeiculo) {
+        formAdicionarVeiculo.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            
+            const novoVeiculo = {
+                tipoVeiculo: document.getElementById('tipoVeiculo').value,
+                placa: document.getElementById('placaVeiculo').value,
+                modelo: document.getElementById('modeloVeiculo').value,
+                cor: document.getElementById('corVeiculo').value
+            };
+            
+            if (novoVeiculo.tipoVeiculo === 'Caminhao') {
+                novoVeiculo.capacidadeCarga = parseFloat(document.getElementById('capacidadeCargaVeiculo').value) || 0;
+            }
+
+            try {
+                const response = await fetch(`${backendUrl}/api/veiculos`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(novoVeiculo)
+                });
+                if(!response.ok) throw new Error('Falha ao adicionar veículo. Verifique os dados.');
+
+                await carregarGaragem(); // Recarrega a garagem para exibir o novo veículo
+                window.exibirNotificacao('Veículo adicionado com sucesso!', 'success');
+                event.target.reset(); // Limpa o formulário
+
+            } catch(e) {
+                window.exibirNotificacao(e.message, 'error');
+            }
+        });
+    }
+
+    // Listener para mostrar/esconder o campo de capacidade de carga
+    document.getElementById('tipoVeiculo').addEventListener('change', (e) => {
+        const campoCarga = document.getElementById('campoCapacidadeCarga');
+        campoCarga.style.display = e.target.value === 'Caminhao' ? 'flex' : 'none';
+    });
 
     // Fecha o modal ao clicar fora dele
     window.onclick = (event) => {

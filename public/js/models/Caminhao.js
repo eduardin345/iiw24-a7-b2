@@ -10,7 +10,7 @@ class Caminhao extends Veiculo {
     _validarPeso(peso) {
          const pesoNumerico = parseFloat(peso);
          if (isNaN(pesoNumerico) || pesoNumerico <= 0) {
-             exibirNotificacao('Peso inválido. Insira um número positivo.', 'error');
+             window.exibirNotificacao('Peso inválido. Insira um número positivo.', 'error');
              return null;
          }
          return pesoNumerico;
@@ -22,11 +22,12 @@ class Caminhao extends Veiculo {
 
         if (this.cargaAtual + pesoNumerico <= this.capacidadeCarga) {
             this.cargaAtual += pesoNumerico;
-            exibirNotificacao(`Caminhão carregado com ${pesoNumerico.toLocaleString('pt-BR')} kg. Carga atual: ${this.cargaAtual.toLocaleString('pt-BR')} kg.`, 'success');
-            atualizarInfoVeiculoNoModal(this.id);
+            window.exibirNotificacao(`Caminhão carregado com ${pesoNumerico.toLocaleString('pt-BR')} kg. Carga atual: ${this.cargaAtual.toLocaleString('pt-BR')} kg.`, 'success');
+            // A função window.atualizar... foi criada no main.js para resolver o bug
+            window.atualizarInfoVeiculoNoModal(this.id);
         } else {
             const espacoLivre = this.capacidadeCarga - this.cargaAtual;
-            exibirNotificacao(`Carga (${pesoNumerico.toLocaleString('pt-BR')}kg) excede a capacidade! Espaço livre: ${espacoLivre.toLocaleString('pt-BR')}kg.`, 'error');
+            window.exibirNotificacao(`Carga (${pesoNumerico.toLocaleString('pt-BR')}kg) excede a capacidade! Espaço livre: ${espacoLivre.toLocaleString('pt-BR')}kg.`, 'error');
         }
     }
 
@@ -36,10 +37,11 @@ class Caminhao extends Veiculo {
 
         if (this.cargaAtual >= pesoNumerico) {
             this.cargaAtual -= pesoNumerico;
-            exibirNotificacao(`Caminhão descarregado em ${pesoNumerico.toLocaleString('pt-BR')} kg. Carga atual: ${this.cargaAtual.toLocaleString('pt-BR')} kg.`, 'success');
-            atualizarInfoVeiculoNoModal(this.id);
+            window.exibirNotificacao(`Caminhão descarregado em ${pesoNumerico.toLocaleString('pt-BR')} kg. Carga atual: ${this.cargaAtual.toLocaleString('pt-BR')} kg.`, 'success');
+            // A função window.atualizar... foi criada no main.js para resolver o bug
+            window.atualizarInfoVeiculoNoModal(this.id);
         } else {
-            exibirNotificacao(`Não é possível descarregar ${pesoNumerico.toLocaleString('pt-BR')}kg. Carga atual é ${this.cargaAtual.toLocaleString('pt-BR')}kg.`, 'error');
+            window.exibirNotificacao(`Não é possível descarregar ${pesoNumerico.toLocaleString('pt-BR')}kg. Carga atual é ${this.cargaAtual.toLocaleString('pt-BR')}kg.`, 'error');
         }
     }
 
