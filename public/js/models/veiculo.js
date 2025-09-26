@@ -100,4 +100,6 @@ class Veiculo {
     }
 }
 
+
+
 export { Veiculo };
