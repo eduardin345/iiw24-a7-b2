@@ -1,11 +1,13 @@
+// Local: SEU_PROJETO/Models/veiculo.js
+
 import mongoose from 'mongoose';
 
-// 1. Definir o Schema para os documentos aninhados (subdocumentos)
+// 1. Primeiro, definimos o Schema para as Manutenções.
+//    Isto será um "subdocumento", ou seja, parte do documento principal do Veículo.
 const manutencaoSchema = new mongoose.Schema({
     data: {
         type: Date,
-        required: [true, 'A data da manutenção é obrigatória.'],
-        default: Date.now
+        required: [true, 'A data da manutenção é obrigatória.']
     },
     tipo: {
         type: String,
@@ -21,17 +23,27 @@ const manutencaoSchema = new mongoose.Schema({
         type: String,
         trim: true
     }
-}, { _id: true }); // Mongoose adicionará um _id a cada manutenção por padrão
+});
 
 
-// 2. Definir o Schema Principal do Veículo
+// 2. Agora, definimos o Schema principal do Veículo.
 const veiculoSchema = new mongoose.Schema({
+    // ----- NOTA IMPORTANTE -----
+    // Este campo 'owner' é a ligação entre o veículo e o usuário que o cadastrou.
+    // É ESSENCIAL para a segurança e para que as suas rotas protegidas funcionem.
+    owner: {
+        type: mongoose.Schema.Types.ObjectId, // Armazena o ID único de um usuário
+        ref: 'User',                          // Diz que este ID se refere a um documento da coleção 'User'
+        required: true                        // Todo veículo DEVE ter um dono.
+    },
+    // ---------------------------
+
     placa: {
         type: String,
         required: [true, 'A placa é obrigatória.'],
-        unique: true, // Garante que não hajam duas placas iguais no banco
+        unique: true, 
         trim: true,
-        uppercase: true // Sempre salva a placa em maiúsculas para consistência
+        uppercase: true 
     },
     modelo: {
         type: String,
@@ -46,11 +58,9 @@ const veiculoSchema = new mongoose.Schema({
     tipoVeiculo: {
         type: String,
         required: true,
-        // Enum garante que apenas estes valores são permitidos
+        // 'enum' é uma validação que só permite os valores dentro do array.
         enum: ['Carro', 'CarroEsportivo', 'Caminhao'] 
     },
-
-    // --- Campos Específicos para cada tipo ---
     
     // Campo para CarroEsportivo
     turbo: {
@@ -58,30 +68,21 @@ const veiculoSchema = new mongoose.Schema({
         default: false
     },
     
-    // Campos para Caminhao
+    // Campos para Caminhao (com validação condicional)
     capacidadeCarga: {
         type: Number,
-        // Este campo só é obrigatório se o tipoVeiculo for 'Caminhao'
+        // Este campo só é obrigatório se o 'tipoVeiculo' for 'Caminhao'.
         required: function() { return this.tipoVeiculo === 'Caminhao'; },
         min: [0, 'A capacidade de carga não pode ser negativa.']
     },
-    cargaAtual: {
-        type: Number,
-        default: 0,
-        min: [0, 'A carga atual não pode ser negativa.']
-    },
-
-    // --- Campo de Array com Subdocumentos ---
+    
+    // A lista de manutenções usará o Schema que definimos acima.
     historicoManutencao: [manutencaoSchema]
 
 }, {
-    // 3. Opções do Schema
-    timestamps: true // Adiciona os campos `createdAt` e `updatedAt` automaticamente
+    timestamps: true 
 });
 
-
-// 4. Compilar o Schema em um Modelo
+// 3. Compilamos e exportamos o modelo.
 const Veiculo = mongoose.model('Veiculo', veiculoSchema);
-
-// 5. Exportar o Modelo
 export default Veiculo;

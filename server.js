@@ -1,90 +1,118 @@
-// Local: backend/server.js (VERSÃO CORRIGIDA E COMPLETA)
+// Local do arquivo: backend/server.js
 
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcrypt'; // Usamos a biblioteca `bcrypt`
 import jwt from 'jsonwebtoken';
-import axios from 'axios'; // <<== ADICIONE ESTA IMPORTAÇÃO
+import axios from 'axios';
 
 // Modelos do Banco de Dados
-import Veiculo from './Models/veiculo.js';
-// Lembre-se de mover o user.js para a pasta Models e corrigir o caminho aqui
-import User from './Models/user.js'; // <<== CAMINHO CORRIGIDO
+import Veiculo from './models/veiculo.js';
+import User from './models/user.js';
 
-// Middleware de Autenticação
+// Middleware de Autenticação (o guardião)
 import authMiddleware from './middleware/auth.js';
 
-// --- CONFIGURAÇÃO INICIAL ---
-dotenv.config();
+// --- CONFIGURAÇÃO INICIAL DO SERVIDOR ---
+dotenv.config(); // Carrega as variáveis do arquivo .env
 const app = express();
 const PORT = process.env.PORT || 3001;
-app.use(cors());
-app.use(express.json());
 
-// --- CONEXÃO COM O MONGODB ---
+// --- Middlewares Globais ---
+app.use(cors());       // Permite que seu frontend (de outra origem) acesse este backend
+app.use(express.json()); // Permite que o servidor entenda corpos de requisição no formato JSON
+
+// --- CONEXÃO COM O BANCO DE DADOS MONGODB ---
 mongoose.connect(process.env.MONGO_URI, {})
     .then(() => console.log("✅ Conectado ao MongoDB Atlas!"))
     .catch(err => {
         console.error("❌ Erro ao conectar ao MongoDB:", err);
-        process.exit(1);
+        process.exit(1); // Encerra a aplicação se a conexão falhar
     });
+
 
 // ===========================================
 // ===== ROTAS DE AUTENTICAÇÃO (PÚBLICAS) =====
 // ===========================================
-// ... Suas rotas de /api/auth/register e /api/auth/login ficam aqui ...
-// (Não precisa mudar nada nelas)
+
+// ROTA PARA REGISTRAR UM NOVO USUÁRIO
 app.post('/api/auth/register', async (req, res) => {
     const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ error: 'E-mail e senha são obrigatórios.' });
+    if (!email || !password) {
+        return res.status(400).json({ error: 'E-mail e senha são obrigatórios.' });
+    }
 
     try {
-        if (await User.findOne({ email })) {
+        // Verifica se o e-mail já existe
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
             return res.status(409).json({ error: 'Este e-mail já está em uso.' });
         }
+        
+        // Criptografa a senha antes de salvar
         const hashedPassword = await bcrypt.hash(password, 10);
+        
+        // Cria o usuário no banco
         await User.create({ email, password: hashedPassword });
+        
         res.status(201).json({ message: 'Usuário registrado com sucesso!' });
     } catch (error) {
-        res.status(500).json({ error: 'Erro ao registrar usuário.' });
+        console.error("[ERRO NO REGISTRO]:", error);
+        res.status(500).json({ error: 'Erro no servidor ao tentar registrar usuário.' });
     }
 });
 
+// ROTA PARA FAZER LOGIN DE UM USUÁRIO
 app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ error: 'E-mail e senha são obrigatórios.' });
+    }
+
     try {
         const user = await User.findOne({ email });
-        if (!user || !(await bcrypt.compare(password, user.password))) {
-            return res.status(401).json({ error: 'Credenciais inválidas.' });
+        const isMatch = user ? await bcrypt.compare(password, user.password) : false;
+
+        if (!user || !isMatch) {
+            return res.status(401).json({ error: 'Credenciais inválidas. Verifique seu e-mail e senha.' });
         }
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '8h' });
+        
+        const token = jwt.sign(
+            { userId: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: '8h' }
+        );
+        
         res.json({ token });
     } catch (error) {
-        res.status(500).json({ error: 'Erro no servidor durante o login.' });
+        console.error("[ERRO NO LOGIN]:", error);
+        res.status(500).json({ error: 'Erro interno no servidor durante o login.' });
     }
 });
 
+
 // ====================================================
-// ===== ROTAS DE VEÍCULOS (AGORA PROTEGIDAS) =====
+// ===== ROTAS DE VEÍCULOS (PROTEGIDAS) =====
 // ====================================================
-// ... Suas rotas de /api/veiculos ficam aqui ...
-// (Não precisa mudar nada nelas)
+
+// READ ALL - Listar todos os veículos DO USUÁRIO logado
 app.get('/api/veiculos', authMiddleware, async (req, res) => {
     try {
         const veiculos = await Veiculo.find({ owner: req.userId }).sort({ createdAt: -1 });
         res.json(veiculos);
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        res.status(500).json({ error: 'Erro ao buscar os veículos do usuário.' });
     }
 });
 
+// CREATE - Criar um novo veículo PARA O USUÁRIO logado
 app.post('/api/veiculos', authMiddleware, async (req, res) => {
     try {
         const dadosDoVeiculo = {
             ...req.body,
-            owner: req.userId
+            owner: req.userId // Associa o veículo ao usuário logado
         };
         const veiculo = new Veiculo(dadosDoVeiculo);
         await veiculo.save();
@@ -94,19 +122,22 @@ app.post('/api/veiculos', authMiddleware, async (req, res) => {
     }
 });
 
+// DELETE - Remover um veículo (apenas se pertencer ao usuário logado)
 app.delete('/api/veiculos/:id', authMiddleware, async (req, res) => {
     try {
-        const veiculo = await Veiculo.findOne({ _id: req.params.id, owner: req.userId });
-        if (!veiculo) {
+        // Encontra e deleta em uma única operação, verificando o dono.
+        const result = await Veiculo.deleteOne({ _id: req.params.id, owner: req.userId });
+
+        if (result.deletedCount === 0) {
             return res.status(404).json({ error: 'Veículo não encontrado ou você não tem permissão para removê-lo.' });
         }
-        await Veiculo.findByIdAndDelete(req.params.id);
         res.json({ message: 'Veículo removido com sucesso.' });
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        res.status(500).json({ error: 'Erro ao remover o veículo.' });
     }
 });
 
+// Adicionar Manutenção a um Veículo
 app.post('/api/veiculos/:id/manutencoes', authMiddleware, async (req, res) => {
     try {
         const veiculo = await Veiculo.findOne({ _id: req.params.id, owner: req.userId });
@@ -114,84 +145,57 @@ app.post('/api/veiculos/:id/manutencoes', authMiddleware, async (req, res) => {
             return res.status(404).json({ error: 'Veículo não encontrado ou não pertence a você.' });
         }
         
-        veiculo.historicoManutencao.push(req.body);
+        veiculo.historicoManutencao.push(req.body); // Adiciona a nova manutenção ao array
         await veiculo.save();
-        res.json(veiculo);
+        res.json(veiculo); // Retorna o veículo completo com a nova manutenção
     } catch (e) {
         res.status(400).json({ error: e.message });
     }
 });
 
 
-// ▼▼▼ SEU BLOCO ANTIGO DE ROTAS VAZIAS É SUBSTITUÍDO POR TUDO ISTO AQUI ▼▼▼
-// --- ROTAS DO ARSENAL DE DADOS (Públicas, não precisam de login) ---
-// ▼▼▼ SUBSTITUA TODO O SEU ANTIGO 'dadosArsenal' POR ESTE BLOCO ABAIXO ▼▼▼
+// ==========================================================
+// ===== ROTAS DO ARSENAL DE DADOS E PREVISÃO (PÚBLICAS) =====
+// ==========================================================
 const dadosArsenal = {
     veiculosDestaque: [
-        // Mantive o McLaren, mas você pode apagar ou alterar este também se quiser.
-        { id: 1, modelo: "McLaren P1", ano: 2015, destaque: "Um ícone híbrido da performance, combinando motor V8 biturbo e elétrico.", imagemUrl: "assets/img/mclaren.jpg" },
-
-        // ====== EDITE A PARTIR DAQUI ======
-
-        // SEU PRIMEIRO CARRO
-        { 
-            id: 2, 
-            modelo: "porsche", // Ex: "Chevrolet Opala"
-            ano: 2024, // Ex: 1988
-            destaque: "é uma porshe.", // Ex: "O lendário sedan de luxo que marcou uma geração no Brasil."
-            // IMPORTANTE: Coloque abaixo o nome exato do seu arquivo de imagem.
-            imagemUrl: "assets/img/porsche.jpg" 
-        },
-
-        // SEU SEGUNDO CARRO
-        { 
-            id: 3, 
-            modelo: "mustang", // Ex: "Ford Maverick GT"
-            ano: 2024, // Ex: 1975
-            destaque: "mustang.", // Ex: "Um clássico muscle car com o som inconfundível do motor V8."
-            // IMPORTANTE: O nome do arquivo pode ter extensão .png, .webp, etc.
-            imagemUrl: "assets/img/png-transparent-ford-gt-shelby-mustang-california-special-mustang-2018-ford-mustang-gt-premium-ford-car-performance-car-vehicle.png" 
-        }
-        
-        // ===================================
+        { id: 1, modelo: "McLaren 720S", ano: 2022, destaque: "Performance pura encontra design aerodinâmico.", imagemUrl: "assets/img/mclaren.jpg" },
+        { id: 2, modelo: "Porsche 911 GT3", ano: 2023, destaque: "O ícone das pistas, legalizado para as ruas.", imagemUrl: "assets/img/porsche.jpg" }
     ],
     servicosOferecidos: [
-        { id: 's1', nome: "Alinhamento e Balanceamento 3D", descricao: "Garantimos a estabilidade e segurança do seu veículo.", precoEstimado: "R$ 180,00" },
-        { id: 's2', nome: "Troca de Óleo e Filtros", descricao: "Serviço essencial para a longevidade do motor.", precoEstimado: "R$ 250,00" },
-        { id: 's3', nome: "Diagnóstico Eletrônico Completo", descricao: "Identificamos falhas para otimizar a performance da injeção eletrônica.", precoEstimado: "R$ 150,00" }
+        { id: 's1', nome: "Diagnóstico Eletrônico Completo", descricao: "Identificamos falhas para otimizar a performance.", precoEstimado: "R$ 150,00" },
+        { id: 's2', nome: "Troca de Óleo e Filtros Sintéticos", descricao: "Essencial para a saúde e longevidade do motor.", precoEstimado: "A partir de R$ 250,00" }
     ],
     dicasManutencao: [
-        { id: 'd1', dica: "Verifique o nível do óleo do motor a cada 1.000 km, especialmente antes de viagens longas." },
-        { id: 'd2', dica: "Mantenha os pneus calibrados para economizar combustível e aumentar a segurança." }
+        { id: 'd1', dica: "Mantenha os pneus calibrados semanalmente para economizar combustível e aumentar a segurança." },
+        { id: 'd2', dica: "Verifique o nível do óleo do motor com o carro frio e em local plano para uma medição precisa." }
     ]
 };
 
-app.get('/api/garagem/veiculos-destaque', (req, res) => {
-    res.json(dadosArsenal.veiculosDestaque);
-});
-
-app.get('/api/garagem/servicos-oferecidos', (req, res) => {
-    res.json(dadosArsenal.servicosOferecidos);
-});
-
-app.get('/api/garagem/dicas-manutencao', (req, res) => {
-    res.json(dadosArsenal.dicasManutencao);
-});
+app.get('/api/garagem/veiculos-destaque', (req, res) => res.json(dadosArsenal.veiculosDestaque));
+app.get('/api/garagem/servicos-oferecidos', (req, res) => res.json(dadosArsenal.servicosOferecidos));
+app.get('/api/garagem/dicas-manutencao', (req, res) => res.json(dadosArsenal.dicasManutencao));
 
 app.get('/api/previsao/:cidade', async (req, res) => {
     const { cidade } = req.params;
     const apiKey = process.env.OPENWEATHER_API_KEY;
-    const url = `https://api.openweathermap.org/data/2.5/weather?q=${cidade}&appid=${apiKey}&units=metric&lang=pt_br`;
+
+    if (!apiKey) {
+        return res.status(500).json({ error: "Erro de configuração no servidor." });
+    }
+
+    const url = `https://api.openweathermap.org/data/2.5/forecast?q=${cidade}&appid=${apiKey}&units=metric&lang=pt_br`;
 
     try {
         const respostaDaAPI = await axios.get(url);
         res.json(respostaDaAPI.data);
     } catch (error) {
-        console.error("❌ Erro ao buscar previsão do tempo:", error.response?.data || error.message);
+        if (error.response && error.response.status === 404) {
+            return res.status(404).json({ error: "Cidade não encontrada." });
+        }
         res.status(500).json({ error: 'Falha ao buscar dados da previsão do tempo.' });
     }
 });
-// ▲▲▲ FIM DO BLOCO DE CÓDIGO SUBSTITUÍDO ▲▲▲
 
 
 // --- INICIALIZAÇÃO DO SERVIDOR ---

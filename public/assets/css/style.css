@@ -459,3 +459,253 @@ input:focus, select:focus, textarea:focus {
     background-color: #e5e7eb;
     transform: translateY(0);
 }
+
+/* style.css */
+
+/* ... todo o seu CSS existente ... */
+
+
+/* style.css */
+
+/* ... Cole este bloco no FINAL do seu arquivo CSS ... */
+
+
+/* ==========================================================
+   9. ESTILOS DA TELA DE LOGIN (VERSÃO REFINADA)
+   ========================================================== */
+
+
+
+.login-container {
+    max-width: 480px;
+    margin: 40px auto;
+    padding: 40px; 
+    background-color: var(--color-surface);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-hover);
+    position: relative; /* Necessário para posicionar o botão 'Voltar' */
+}
+
+/* Afastando o botão "Voltar" */
+.login-container .nav-button-top-left {
+    top: 20px;
+    left: 20px;
+}
+
+/* Garante que o título não fique embaixo do botão "Voltar" */
+.login-container .page-header {
+    padding-top: 15px;
+    text-align: center;
+}
+
+/* Abas Login / Registrar */
+.tab-group {
+    display: flex;
+    background-color: var(--color-background);
+    border-radius: 10px;
+    padding: 6px;
+    margin: 30px 0; /* Aumenta o espaço vertical */
+}
+
+.tab-button {
+    flex: 1;
+    padding: 12px;
+    font-weight: 500;
+    color: var(--color-text-light);
+    background-color: transparent;
+    border-radius: 8px;
+    box-shadow: none;
+}
+.tab-button:hover {
+    background-color: #e5e7eb; /* Cor um pouco mais escura no hover */
+    transform: none; /* Remove o efeito de levantar que não fica bom aqui */
+}
+.tab-button.active {
+    background-color: var(--color-surface);
+    color: var(--color-primary-dark);
+    font-weight: 700;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+}
+
+.form-container {
+    animation: fadeIn 0.4s ease-out; /* Efeito suave ao trocar de form */
+}
+
+.form-container form {
+    display: flex;
+    flex-direction: column;
+}
+
+/* ESSA É A REGRA MAIS IMPORTANTE, GARANTE QUE UM DOS FORMS FIQUE ESCONDIDO */
+.form-hidden {
+    display: none !important;
+}
+
+/* Melhorando o espaçamento do formulário */
+.form-container .form-group {
+    text-align: left;
+    margin-bottom: 20px; /* Espaço entre cada grupo (email, senha) */
+}
+.form-container label {
+    margin-bottom: 8px; /* Espaço entre o texto e a caixa de input */
+}
+.form-container button[type="submit"] {
+    margin-top: 15px; /* Espaço antes do botão "Entrar" / "Criar Conta" */
+    padding: 15px;
+    font-size: 1.1rem;
+}
+
+.nav-button-top-left {
+    position: absolute; /* Permite posicioná-lo livremente dentro do container pai */
+    top: 20px;          /* 20px de distância do topo */
+    left: 20px;         /* 20px de distância da esquerda */
+    z-index: 10;        /* Garante que fique acima de outros elementos se necessário */
+}
+
+/* Estilo Visual */
+.nav-button-top-left {
+    background-color: var(--color-background); /* Cor de fundo suave, igual ao da página */
+    color: var(--color-text-light);            /* Cor do texto e ícone cinza */
+    padding: 8px 16px;                         /* Espaçamento interno */
+    font-size: 0.95rem;                        /* Tamanho da fonte */
+    font-weight: 500;
+    border: 1px solid var(--color-border);     /* Borda sutil */
+    border-radius: 20px;                       /* Bordas bem arredondadas (estilo "pílula") */
+    box-shadow: none;                          /* Sem sombra inicial para ser mais discreto */
+    transition: all 0.2s ease-out;
+}
+
+/* Efeito ao Passar o Mouse (Hover) */
+.nav-button-top-left:hover {
+    background-color: #fff;                  /* Fundo branco ao passar o mouse */
+    color: var(--color-text-dark);           /* Cor do texto fica mais escura */
+    border-color: #d1d5db;                   /* Borda um pouco mais visível */
+    transform: translateY(-2px);             /* Efeito sutil de levantar */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05); /* Sombra suave no hover */
+}
+
+/* ==========================================================
+   ESTILOS DA NOVA TELA DE AUTENTICAÇÃO (LOGIN/REGISTRO)
+   ========================================================== */
+
+/* Remove padding do container principal quando a tela de login estiver ativa */
+.tela#telaLogin {
+    padding: 0;
+    min-height: 90vh; /* Ocupa a maior parte da altura */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-container {
+    display: flex;
+    width: 100%;
+    max-width: 1100px; /* Aumenta a largura total do "quadrado" */
+    margin: 20px;
+    background-color: var(--color-surface);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-hover);
+    overflow: hidden; /* Garante que os cantos arredondados sejam respeitados */
+}
+
+/* Coluna da Esquerda (Imagem) */
+.auth-branding-column {
+    flex: 1;
+    background: linear-gradient(160deg, var(--color-primary-dark), var(--color-primary));
+    color: white;
+    padding: 60px 40px;
+    display: none; /* Escondido em telas pequenas */
+}
+
+@media (min-width: 992px) {
+    .auth-branding-column {
+        display: flex; /* Visível apenas em telas maiores (tablets em modo paisagem e desktops) */
+    }
+}
+
+.branding-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.branding-content h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 20px;
+}
+.branding-content p {
+    font-size: 1.1rem;
+    opacity: 0.8;
+    max-width: 400px;
+    margin-bottom: 40px;
+}
+.branding-content img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Coluna da Direita (Formulário) */
+.auth-form-column {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+}
+
+.form-wrapper {
+    width: 100%;
+    max-width: 400px;
+}
+
+/* Abas de Navegação (Login / Registrar) */
+.tab-group {
+    display: flex;
+    background-color: var(--color-background);
+    border-radius: 10px;
+    padding: 6px;
+    margin-bottom: 30px;
+}
+.tab-button {
+    flex: 1; padding: 12px; font-weight: 500;
+    color: var(--color-text-light); background-color: transparent;
+    border-radius: 8px; box-shadow: none;
+}
+.tab-button:hover { background-color: #e5e7eb; transform: none; }
+.tab-button.active {
+    background-color: var(--color-surface); color: var(--color-primary-dark);
+    font-weight: 700; box-shadow: var(--shadow-soft);
+}
+
+/* Estilo Aprimorado para Formulários de Autenticação */
+#formLogin, #formRegister { display: flex; flex-direction: column; }
+.form-hidden { display: none !important; }
+.auth-form-column .form-group { text-align: left; margin-bottom: 20px; }
+.auth-form-column label {
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--color-text-dark);
+}
+.auth-form-column button[type="submit"] {
+    margin-top: 15px; padding: 15px; font-size: 1.1rem;
+}
+
+
+/* --- APRIMORAMENTO DO BOTÃO VOLTAR (POSICIONAMENTO E ESTILO) --- */
+.nav-button-top-left {
+    position: absolute;
+    top: 30px; /* Distância do topo */
+    left: 30px; /* Distância da esquerda */
+    z-index: 10;
+    background-color: var(--color-surface);
+    color: var(--color-text-light);
+    border: 1px solid var(--color-border);
+    border-radius: 25px; /* Formato de "pílula" */
+    box-shadow: var(--shadow-soft);
+}
+.nav-button-top-left:hover {
+    background-color: var(--color-background);
+    color: var(--color-text-dark);
+}

@@ -1,11 +1,14 @@
-// CORRIGIDO: Adiciona o import com o caminho relativo correto
+// Local: public/js/models/Carro.js
+
+// Importa a classe pai 'Veiculo'
 import { Veiculo } from './veiculo.js';
 
 class Carro extends Veiculo {
-    constructor(modelo, cor, id = null) {
-        super(modelo, cor, id, 'Carro');
+    // O construtor repassa todos os parâmetros para o construtor da classe Veiculo
+    constructor(modelo, cor, id = null, tipoVeiculo = 'Carro', imagemUrl) {
+        super(modelo, cor, id, tipoVeiculo, imagemUrl);
     }
 }
 
-// CORRIGIDO: Adiciona a exportação
+// Exporta a classe Carro
 export { Carro };

@@ -1,7 +1,11 @@
+// Local: public/js/models/veiculo.js
+
+// Importamos a classe Manutencao, que será usada para o histórico
 import { Manutencao } from './Manutencao.js';
 
 class Veiculo {
-    constructor(modelo, cor, id = null, tipoVeiculo = 'Veiculo') {
+    // Este é o construtor correto, aceitando a URL da imagem como parâmetro.
+    constructor(modelo, cor, id = null, tipoVeiculo = 'Veiculo', imagemUrl = 'assets/img/placeholder.webp') {
         this.id = id || `veh-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 9)}`;
         this.modelo = modelo;
         this.cor = cor;
@@ -9,39 +13,37 @@ class Veiculo {
         this.velocidade = 0;
         this.historicoManutencao = [];
         this.tipoVeiculo = tipoVeiculo;
-        this.placa = ''; // Placa será preenchida posteriormente
+        this.placa = ''; // Placa será preenchida pelos dados do backend
+        this.imagemUrl = imagemUrl; // Armazena a URL da imagem para o simulador
     }
 
     ligar() {
         if (this.ligado) {
-            console.warn(`${this.modelo} já está ligado.`);
-            return;
+            throw new Error(`${this.modelo} já está ligado.`);
         }
         this.ligado = true;
     }
 
     desligar() {
         if (!this.ligado) {
-            console.warn(`${this.modelo} já está desligado.`);
-            return;
+            throw new Error(`${this.modelo} já está desligado.`);
         }
         if (this.velocidade > 0) {
-            console.error(`Não é possível desligar ${this.modelo} em movimento!`);
-            return;
+            throw new Error(`Não é possível desligar ${this.modelo} em movimento!`);
         }
         this.ligado = false;
     }
 
     acelerar(valor) {
         if (!this.ligado) {
-            console.error(`Ligue o ${this.modelo} antes de acelerar.`);
-            return;
+            throw new Error(`Ligue o ${this.modelo} antes de acelerar.`);
         }
         this.velocidade = Math.max(0, this.velocidade + (valor || 10));
     }
     
     buzinar() {
-        console.log(`${this.modelo} está buzinando: Beep! Beep!`);
+        // Retorna a mensagem para ser exibida pelo `main.js`
+        return `${this.modelo} está buzinando: Beep! Beep!`;
     }
 
     adicionarManutencao(manutencao) {
@@ -52,19 +54,12 @@ class Veiculo {
         return false;
     }
     
-    removerManutencaoPorId(idManutencao) {
-        const index = this.historicoManutencao.findIndex(m => m.id === idManutencao);
-        if (index > -1) {
-            this.historicoManutencao.splice(index, 1);
-            return true;
-        }
-        return false;
-    }
-    
     getHistoricoHTML() {
         if (this.historicoManutencao.length === 0) {
-            return '<p>Nenhum registro de manutenção.</p>';
+            return '<p>Nenhum registro de manutenção para este veículo.</p>';
         }
+        // Ordena as manutenções pela data mais recente antes de exibi-las
+        this.historicoManutencao.sort((a, b) => new Date(b.data) - new Date(a.data));
         return '<ul>' + this.historicoManutencao.map(m => `<li>${m.formatar()}</li>`).join('') + '</ul>';
     }
 
@@ -79,27 +74,15 @@ class Veiculo {
     }
 
     getInfoEspecificaHTML() {
+        // Este método será sobrescrito pelas classes filhas, se necessário.
         return '';
     }
     
     exibirInformacoesCompletaHTML() {
+        // Combina as informações básicas com as específicas
         return this.getInfoBasicaHTML() + this.getInfoEspecificaHTML();
-    }
-    
-    toJSON() {
-        return {
-            id: this.id,
-            placa: this.placa,
-            modelo: this.modelo,
-            cor: this.cor,
-            ligado: this.ligado,
-            velocidade: this.velocidade,
-            tipoVeiculo: this.tipoVeiculo,
-            historicoManutencao: this.historicoManutencao.map(m => m.toJSON())
-        };
     }
 }
 
-
-
+// Exporta a classe para que outros arquivos possam importá-la
 export { Veiculo };
