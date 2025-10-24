@@ -5,7 +5,7 @@ import { Manutencao } from './Manutencao.js';
 
 class Veiculo {
     // Este é o construtor correto, aceitando a URL da imagem como parâmetro.
-    constructor(modelo, cor, id = null, tipoVeiculo = 'Veiculo', imagemUrl = 'assets/img/placeholder.webp') {
+    constructor(modelo, cor, id = null, tipoVeiculo = 'Veiculo', imagemUrl = 'assets/img/mclaren.jpg') {
         this.id = id || `veh-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 9)}`;
         this.modelo = modelo;
         this.cor = cor;
@@ -14,7 +14,7 @@ class Veiculo {
         this.historicoManutencao = [];
         this.tipoVeiculo = tipoVeiculo;
         this.placa = ''; // Placa será preenchida pelos dados do backend
-        this.imagemUrl = imagemUrl; // Armazena a URL da imagem para o simulador
+       
     }
 
     ligar() {

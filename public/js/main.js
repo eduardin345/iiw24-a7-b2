@@ -1,5 +1,6 @@
-// Local: public/js/main.js (VERSÃO 100% COMPLETA)
+// Local: public/js/main.js
 
+// Importa as classes do frontend, que são necessárias para criar os objetos.
 import { Manutencao } from './models/Manutencao.js';
 import { Carro } from './models/Carro.js';
 import { CarroEsportivo } from './models/CarroEsportivo.js';
@@ -8,18 +9,18 @@ import { Caminhao } from './models/Caminhao.js';
 // === VARIÁVEIS GLOBAIS ===
 let garagem = [];
 let veiculoSimuladorAtivo = null;
-const backendUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-    ? 'http://localhost:3001' 
-    : 'https://iiw24-a7-b2.onrender.com';
 const modal = document.getElementById('modalDetalhesVeiculo');
+// A variável `backendUrl` não é mais necessária, pois o backend está servindo o frontend.
 
-// Helper para obter o token salvo no navegador.
+// === FUNÇÕES HELPERS ===
+
+// Pega o token de autenticação salvo no navegador.
 const getToken = () => localStorage.getItem('jwt_token');
 
-// Helper para criar os cabeçalhos de autenticação para as requisições.
+// Monta o cabeçalho padrão para requisições autenticadas.
 const getAuthHeaders = () => {
-    const token = getToken();
     const headers = { 'Content-Type': 'application/json' };
+    const token = getToken();
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
     }
@@ -28,14 +29,16 @@ const getAuthHeaders = () => {
 
 
 // ==========================================================
-// === FUNÇÕES GLOBAIS EXPOSTAS (onclick) ===
+// === FUNÇÕES GLOBAIS (Expostas para uso no onclick do HTML) ===
 // ==========================================================
 
+// Controla qual "tela" (div) está visível na aplicação.
 window.mostrarTela = (idTela) => {
     document.querySelectorAll('.tela').forEach(tela => tela.classList.remove('tela-ativa'));
     document.getElementById(idTela)?.classList.add('tela-ativa');
 };
 
+// Alterna entre os formulários de Login e Registro.
 window.mostrarForm = (formId) => {
     const formLogin = document.getElementById('formLogin');
     const formRegister = document.getElementById('formRegister');
@@ -55,75 +58,106 @@ window.mostrarForm = (formId) => {
     }
 };
 
+// Função de Logout do usuário.
 window.logout = () => {
     localStorage.removeItem('jwt_token');
     window.exibirNotificacao('Você saiu da sua conta.', 'info');
     garagem = [];
-    renderizarGaragem();
-    document.getElementById('listaAgendamentosFuturos').innerHTML = '<p>Nenhum agendamento futuro.</p>';
+    renderizarGaragem(); // Limpa a lista de veículos da tela
     mostrarTela('telaLogin');
 };
 
-
-window.selecionarVeiculoSimulador = (tipo) => {
-    switch (tipo) {
-        case 'Carro': veiculoSimuladorAtivo = new Carro('Mustang GT', 'Vermelho', null, 'Carro', 'assets/img/sim-carro.png'); break;
-        case 'CarroEsportivo': veiculoSimuladorAtivo = new CarroEsportivo('Porsche 911 GT3', 'Branco', null, 'CarroEsportivo', 'assets/img/sim-carro-esportivo.png'); break;
-        case 'Caminhao': veiculoSimuladorAtivo = new Caminhao('Optimus Prime', 'Vermelho e Azul', 25000, null, 'Caminhao', 'assets/img/sim-caminhao.png'); break;
-    }
-    renderizarSimulador();
-};
-
-window.acaoSimulador = (acao, param = null) => {
-    if (!veiculoSimuladorAtivo) return window.exibirNotificacao('Nenhum veículo no simulador.', 'error');
-    try {
-        const metodo = veiculoSimuladorAtivo[acao];
-        if (typeof metodo === 'function') {
-            metodo.call(veiculoSimuladorAtivo, param);
-            window.exibirNotificacao(`Ação '${acao}' executada.`, 'success');
-        } else throw new Error(`Ação '${acao}' não encontrada.`);
-    } catch (e) {
-        window.exibirNotificacao(e.message, 'error');
-    }
-    renderizarSimulador();
-};
-
-window.fecharModal = () => { if (modal) modal.style.display = 'none'; };
-
+// Abre o modal de detalhes de um veículo.
 window.abrirModalDetalhes = (veiculoId) => {
     const veiculo = garagem.find(v => v.id === veiculoId);
     if (!veiculo) return window.exibirNotificacao('Veículo não encontrado.', 'error');
+    
     document.getElementById('modalTituloVeiculo').textContent = `${veiculo.modelo} (${veiculo.placa})`;
     document.getElementById('modalInfoVeiculo').innerHTML = veiculo.exibirInformacoesCompletaHTML();
     document.getElementById('manutencaoVeiculoId').value = veiculo.id;
-    renderizarHistoricoManutencaoModal(veiculo.id);
+    
+    // Busca e renderiza o histórico de manutenções da API
+    carregarManutencoesDoVeiculo(veiculo.id);
+
+    // Inicializa o seletor de data
     flatpickr("#manutencaoData", { enableTime: true, dateFormat: "Y-m-d H:i", minDate: "today" });
     if (modal) modal.style.display = 'flex';
 };
 
+// Fecha qualquer modal que esteja aberto.
+window.fecharModal = () => { if (modal) modal.style.display = 'none'; };
+
+// Envia uma requisição para remover um veículo.
 window.removerVeiculo = async (veiculoId) => {
     const veiculo = garagem.find(v => v.id === veiculoId);
-    if (!veiculo || !confirm(`Tem certeza de que deseja remover o ${veiculo.modelo}?`)) return;
+    if (!veiculo || !confirm(`Tem certeza que deseja remover o veículo ${veiculo.modelo}?`)) return;
+
     try {
-        const response = await fetch(`${backendUrl}/api/veiculos/${veiculoId}`, { method: 'DELETE', headers: getAuthHeaders() });
-        if (!response.ok) throw new Error((await response.json()).error || 'Falha ao remover do servidor.');
+        const response = await fetch(`/api/veiculos/${veiculoId}`, { method: 'DELETE', headers: getAuthHeaders() });
+        if (!response.ok) throw new Error((await response.json()).error || 'Falha ao remover o veículo.');
+        
         window.exibirNotificacao('Veículo removido com sucesso!', 'success');
-        await carregarGaragem();
+        await carregarGaragem(); // Atualiza a lista de veículos da garagem
     } catch (error) {
         window.exibirNotificacao(error.message, 'error');
     }
 };
 
-window.atualizarInfoVeiculoNoModal = (veiculoId) => {
-    const veiculo = garagem.find(v => v.id === veiculoId);
-    const idNoModal = document.getElementById('manutencaoVeiculoId').value;
-    if (veiculo && modal.style.display === 'flex' && veiculo.id === idNoModal) {
-        document.getElementById('modalInfoVeiculo').innerHTML = veiculo.exibirInformacoesCompletaHTML();
-    }
-};
 
 // ==========================================================
-// === FUNÇÕES INTERNAS DA APLICAÇÃO ===
+// ================ FUNÇÕES DO SIMULADOR ====================
+// ==========================================================
+
+window.selecionarVeiculoSimulador = (tipo) => {
+    switch (tipo) {
+        case 'Carro': veiculoSimuladorAtivo = new Carro('Mustang GT', 'Vermelho', null, 'Carro', 'assets/img/mustang-sim.png'); break;
+        case 'CarroEsportivo': veiculoSimuladorAtivo = new CarroEsportivo('Porsche 911 GT3', 'Branco', false, null, 'CarroEsportivo', 'assets/img/porsche.jpg'); break;
+        case 'Caminhao': veiculoSimuladorAtivo = new Caminhao('Optimus Prime', 'Vermelho e Azul', 25000, null, 'Caminhao', 'assets/img/optimus-prime-caminhao.webp'); break;
+    }
+    renderizarSimulador();
+};
+
+window.acaoSimulador = (acao, param = null) => {
+    if (!veiculoSimuladorAtivo) return window.exibirNotificacao('Nenhum veículo selecionado no simulador.', 'error');
+    
+    try {
+        let mensagem = `Ação '${acao}' executada.`;
+        // Certifica-se que o método existe antes de chamar
+        if (typeof veiculoSimuladorAtivo[acao] === 'function') {
+            const retornoMetodo = veiculoSimuladorAtivo[acao](param);
+            if (retornoMetodo) mensagem = retornoMetodo; // Usa a mensagem de retorno da classe, se houver
+        } else {
+            throw new Error(`Ação '${acao}' é desconhecida.`);
+        }
+        window.exibirNotificacao(mensagem, 'info');
+    } catch (e) {
+        window.exibirNotificacao(e.message, 'error'); // Exibe a mensagem de erro vinda da classe (throw new Error)
+    }
+    renderizarSimulador(); // Re-renderiza para mostrar o novo estado (ligado, velocidade, etc.)
+};
+
+function renderizarSimulador() {
+    const container = document.getElementById('simulador-veiculo-container');
+    if (!veiculoSimuladorAtivo) {
+        container.innerHTML = "<p>Selecione um tipo de veículo para começar.</p>";
+        return;
+    }
+    
+    const imagemSrc = veiculoSimuladorAtivo.imagemUrl; 
+    container.innerHTML = `
+        <img src="${imagemSrc}" alt="Imagem de ${veiculoSimuladorAtivo.modelo}" class="sim-vehicle-image" onerror="this.src='assets/img/placeholder.webp';">
+        <div class="info-box">${veiculoSimuladorAtivo.exibirInformacoesCompletaHTML()}</div>
+        <div class="button-group-simulador">
+             <button onclick="acaoSimulador('ligar')" class="button"><i class="fas fa-play"></i> Ligar</button>
+             <button onclick="acaoSimulador('desligar')" class="button"><i class="fas fa-stop"></i> Desligar</button>
+             <button onclick="acaoSimulador('acelerar', 15)" class="button"><i class="fas fa-forward"></i> Acelerar</button>
+             <button onclick="acaoSimulador('buzinar')" class="button"><i class="fas fa-volume-up"></i> Buzinar</button>
+        </div>
+    `;
+}
+
+// ==========================================================
+// ======== FUNÇÕES DE LÓGICA INTERNA E RENDERIZAÇÃO ========
 // ==========================================================
 
 window.exibirNotificacao = (mensagem, tipo = 'info', duracaoMs = 4000) => {
@@ -136,23 +170,21 @@ window.exibirNotificacao = (mensagem, tipo = 'info', duracaoMs = 4000) => {
     div.timeoutId = setTimeout(() => div.classList.remove('show'), duracaoMs);
 };
 
+// Transforma os dados brutos da API em objetos de classe do frontend.
 function criarVeiculoDeJSON(json) {
     if (!json || !json.tipoVeiculo) return null;
     let veiculo;
+    const id = json._id || json.id;
     try {
-        const id = json._id || json.id;
         switch (json.tipoVeiculo) {
             case 'Carro': veiculo = new Carro(json.modelo, json.cor, id); break;
-            case 'CarroEsportivo': veiculo = new CarroEsportivo(json.modelo, json.cor, json.turbo, id); break;
-            case 'Caminhao': veiculo = new Caminhao(json.modelo, json.cor, json.capacidadeCarga, json.cargaAtual, id); break;
+            case 'CarroEsportivo': veiculo = new CarroEsportivo(json.modelo, json.cor, id, 'CarroEsportivo', null, json.turbo); break;
+            case 'Caminhao': veiculo = new Caminhao(json.modelo, json.cor, json.capacidadeCarga, id, 'Caminhao', null, json.cargaAtual); break;
             default: return null;
         }
         veiculo.placa = json.placa;
-        if(json.historicoManutencao && Array.isArray(json.historicoManutencao)) {
-            veiculo.historicoManutencao = json.historicoManutencao.map(m => new Manutencao(m.data, m.tipo, m.custo, m.descricao));
-        }
         return veiculo;
-    } catch (e) { console.error("Falha ao criar Veículo de JSON", e); return null; }
+    } catch (e) { console.error("Falha ao criar instância de veículo a partir do JSON", e); return null; }
 }
 
 async function carregarGaragem() {
@@ -163,16 +195,18 @@ async function carregarGaragem() {
     }
     container.innerHTML = '<p>Carregando sua garagem...</p>';
     try {
-        const response = await fetch(`${backendUrl}/api/veiculos`, { method: 'GET', headers: getAuthHeaders() });
+        const response = await fetch('/api/veiculos', { method: 'GET', headers: getAuthHeaders() });
         if (response.status === 401) {
             logout();
-            throw new Error('Sessão expirada. Faça o login novamente.');
+            throw new Error('Sua sessão expirou. Por favor, faça o login novamente.');
         }
         if (!response.ok) throw new Error((await response.json()).error || 'Não foi possível carregar a garagem.');
         const data = await response.json();
         garagem = data.map(criarVeiculoDeJSON).filter(v => v);
         renderizarGaragem();
-        renderizarAgendamentosFuturos();
+        
+        // Agora, populamos os agendamentos futuros após carregar a garagem
+        // carregarAgendamentosGlobais();
     } catch (error) {
         container.innerHTML = `<p style="color:red; text-align:center;">${error.message}</p>`;
     }
@@ -195,75 +229,54 @@ function renderizarGaragem() {
 }
 
 
-function renderizarSimulador() {
-    const container = document.getElementById('simulador-veiculo-container');
-
-    if (!veiculoSimuladorAtivo) {
-        container.innerHTML = "<p>Selecione um tipo de veículo abaixo para começar.</p>";
-        return;
-    }
-    
-    // AGORA ESTA LINHA FUNCIONA, pois veiculoSimuladorAtivo.imagemUrl existe.
-    const imagemSrc = veiculoSimuladorAtivo.imagemUrl; 
-
-    // O código aqui vai gerar a URL correta e não mais "/public/undefined"
-    container.innerHTML = `
-        <img src="${imagemSrc}" alt="Imagem do Veículo" class="sim-vehicle-image">
-        <div class="info-box">${veiculoSimuladorAtivo.exibirInformacoesCompletaHTML()}</div>
-        <div class="button-group-simulador">
-             <button onclick="acaoSimulador('ligar')" class="button"><i class="fas fa-play"></i> Ligar</button>
-             <button onclick="acaoSimulador('desligar')" class="button"><i class="fas fa-stop"></i> Desligar</button>
-             <button onclick="acaoSimulador('acelerar', 15)" class="button"><i class="fas fa-forward"></i> Acelerar</button>
-             <button onclick="acaoSimulador('buzinar')" class="button"><i class="fas fa-volume-up"></i> Buzinar</button>
-        </div>
-    `;
-}
-
-function renderizarHistoricoManutencaoModal(veiculoId) {
-    const veiculo = garagem.find(v => v.id === veiculoId);
-    document.getElementById('modalHistoricoManutencao').innerHTML = veiculo ? veiculo.getHistoricoHTML() : '<p>Veículo não encontrado.</p>';
-}
-
-function renderizarAgendamentosFuturos() {
-    const container = document.getElementById('listaAgendamentosFuturos');
-    const hoje = new Date();
-    const agendamentos = [];
-    garagem.forEach(veiculo => {
-        veiculo.historicoManutencao.forEach(manutencao => {
-            if (new Date(manutencao.data) > hoje) {
-                agendamentos.push({ ...manutencao, veiculo: veiculo });
-            }
-        });
-    });
-    agendamentos.sort((a, b) => new Date(a.data) - new Date(b.data));
-    if (agendamentos.length === 0) {
-        container.innerHTML = '<p>Nenhum agendamento futuro.</p>';
-        return;
-    }
-    container.innerHTML = '<ul>' + agendamentos.map(m => `<li>${m.formatar(true, m.veiculo.modelo)}</li>`).join('') + '</ul>';
-}
-
-async function fetchData(endpoint, containerId, renderer) {
-    const container = document.getElementById(containerId);
+async function carregarManutencoesDoVeiculo(veiculoId) {
+    const container = document.getElementById('modalHistoricoManutencao');
+    container.innerHTML = '<p>Carregando histórico...</p>';
     try {
-        const response = await fetch(`${backendUrl}/api/garagem/${endpoint}`);
-        if (!response.ok) throw new Error('Falha ao carregar dados.');
-        const data = await response.json();
-        renderer(data, container);
+        const response = await fetch(`/api/veiculos/${veiculoId}/manutencoes`, { method: 'GET', headers: getAuthHeaders() });
+        if (!response.ok) throw new Error("Não foi possível carregar o histórico.");
+        
+        const manutencoesJSON = (await response.json()).historicoManutencao;
+        const veiculo = garagem.find(v => v.id === veiculoId);
+        if (veiculo) {
+            veiculo.historicoManutencao = manutencoesJSON.map(m => new Manutencao(m.data, m.descricaoServico, m.custo, ''));
+            container.innerHTML = veiculo.getHistoricoHTML();
+        }
     } catch (error) {
         container.innerHTML = `<p style="color:red;">${error.message}</p>`;
     }
 }
 
-function renderizarDestaques(data, container) { container.innerHTML = data.map(v => `<div class="veiculo-card"><img src="${v.imagemUrl}" alt="${v.modelo}" class="veiculo-card-imagem"><div class="veiculo-card-conteudo"><h3>${v.modelo} (${v.ano})</h3><p>${v.destaque}</p></div></div>`).join(''); }
-function renderizarServicos(data, container) { container.innerHTML = data.map(s => `<li class="servico-item"><strong>${s.nome}</strong><p>${s.descricao}</p><span>Preço Estimado: ${s.precoEstimado}</span></li>`).join(''); }
-function renderizarDicas(data, container) { container.innerHTML = data.map(d => `<div class="dica-item"><i class="fas fa-lightbulb"></i><p>${d.dica}</p></div>`).join(''); }
+async function fetchData(endpoint, containerId, renderer) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = `<p>Carregando...</p>`;
+    try {
+        const response = await fetch(`/api/garagem/${endpoint}`);
+        if (!response.ok) throw new Error('Falha ao carregar.');
+        const data = await response.json();
+        renderer(data, container);
+    } catch (error) {
+        container.innerHTML = `<p style="color:red; text-align: center;">${error.message}</p>`;
+    }
+}
+
+function renderizarDestaques(data, container) {
+    container.innerHTML = data.map(v => `<div class="veiculo-card"><img src="${v.imagemUrl}" alt="${v.modelo}" class="veiculo-card-imagem" onerror="this.src='assets/img/placeholder.webp';"><div class="veiculo-card-conteudo"><h3>${v.modelo} (${v.ano})</h3><p>${v.destaque}</p></div></div>`).join('');
+}
+function renderizarServicos(data, container) {
+    container.innerHTML = data.map(s => `<li class="servico-item"><strong>${s.nome}</strong><p>${s.descricao}</p><span>Preço: ${s.precoEstimado}</span></li>`).join('');
+}
+function renderizarDicas(data, container) {
+    container.innerHTML = data.map(d => `<div class="dica-item"><i class="fas fa-lightbulb"></i><p>${d.dica}</p></div>`).join('');
+}
+
 
 // ==========================================================
-// === INICIALIZAÇÃO DA APLICAÇÃO (ENTRY POINT) ===
+// === PONTO DE ENTRADA DA APLICAÇÃO (INICIALIZAÇÃO) ===
 // ==========================================================
 document.addEventListener('DOMContentLoaded', () => {
     
+    // Verifica se há um token ao carregar a página para decidir qual tela mostrar.
     if (getToken()) {
         mostrarTela('telaGerenciamento');
         carregarGaragem();
@@ -271,19 +284,22 @@ document.addEventListener('DOMContentLoaded', () => {
         mostrarTela('telaEntrada');
     }
 
+    // Inicializa o simulador com o primeiro veículo.
     selecionarVeiculoSimulador('Carro');
+
+    // Busca os dados públicos do "Arsenal".
     fetchData('veiculos-destaque', 'veiculos-destaque-container', renderizarDestaques);
     fetchData('servicos-oferecidos', 'servicos-oferecidos-lista', renderizarServicos);
     fetchData('dicas-manutencao', 'dicas-manutencao-container', renderizarDicas);
     
-    // --- LÓGICA DE EVENTOS ---
+    // --- LÓGICA DE EVENT LISTENERS DOS FORMULÁRIOS ---
     
     document.getElementById('formRegister').addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = document.getElementById('registerEmail').value;
         const password = document.getElementById('registerPassword').value;
         try {
-            const response = await fetch(`${backendUrl}/api/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+            const response = await fetch(`/api/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || 'Falha ao registrar.');
             window.exibirNotificacao('Usuário registrado com sucesso! Faça o login.', 'success');
@@ -297,7 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const email = document.getElementById('loginEmail').value;
         const password = document.getElementById('loginPassword').value;
         try {
-            const response = await fetch(`${backendUrl}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+            const response = await fetch(`/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || 'Falha no login.');
             localStorage.setItem('jwt_token', data.token);
@@ -312,19 +328,15 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
         const veiculoId = document.getElementById('manutencaoVeiculoId').value;
         const dados = {
-            data: document.getElementById('manutencaoData').value,
-            tipo: document.getElementById('manutencaoTipo').value,
+            descricaoServico: document.getElementById('manutencaoTipo').value, // ID 'manutencaoTipo' parece errado, o label é 'Serviço'
             custo: parseFloat(document.getElementById('manutencaoCusto').value),
-            descricao: document.getElementById('manutencaoDescricao').value
+            data: document.getElementById('manutencaoData').value
         };
         try {
-            const response = await fetch(`${backendUrl}/api/veiculos/${veiculoId}/manutencoes`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(dados) });
+            const response = await fetch(`/api/veiculos/${veiculoId}/manutencoes`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(dados) });
             if (!response.ok) throw new Error((await response.json()).error || 'Falha ao salvar manutenção.');
-            const veiculoAtualizadoJSON = await response.json();
-            const index = garagem.findIndex(v => v.id === veiculoId);
-            if (index > -1) garagem[index] = criarVeiculoDeJSON(veiculoAtualizadoJSON);
-            renderizarHistoricoManutencaoModal(veiculoId);
-            renderizarAgendamentosFuturos();
+            
+            await carregarManutencoesDoVeiculo(veiculoId);
             window.exibirNotificacao('Manutenção salva com sucesso!', 'success');
             event.target.reset();
         } catch (e) { window.exibirNotificacao(e.message, 'error'); }
@@ -336,13 +348,13 @@ document.addEventListener('DOMContentLoaded', () => {
             tipoVeiculo: document.getElementById('tipoVeiculo').value,
             placa: document.getElementById('placaVeiculo').value,
             modelo: document.getElementById('modeloVeiculo').value,
-            cor: document.getElementById('corVeiculo').value
+            cor: document.getElementById('corVeiculo').value,
         };
         if (novoVeiculo.tipoVeiculo === 'Caminhao') {
             novoVeiculo.capacidadeCarga = parseFloat(document.getElementById('capacidadeCargaVeiculo').value) || 0;
         }
         try {
-            const response = await fetch(`${backendUrl}/api/veiculos`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(novoVeiculo) });
+            const response = await fetch(`/api/veiculos`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(novoVeiculo) });
             if (!response.ok) throw new Error((await response.json()).error || 'Falha ao adicionar veículo.');
             await carregarGaragem();
             window.exibirNotificacao('Veículo adicionado com sucesso!', 'success');
