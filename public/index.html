@@ -207,15 +207,24 @@
     </div>
     
     <!-- SCRIPTS -->
+ <!-- SUBSTITUA TODO O SEU BLOCO DE SCRIPTS POR ESTE -->
+
+    <!-- SCRIPTS ESSENCIAIS -->
+    <!-- Carregador da biblioteca de calendário -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="js/models/Manutencao.js" type="module"></script>
-    <script src="js/models/Veiculo.js" type="module"></script>
-    <script src="js/models/Carro.js" type="module"></script>
-    <script src="js/models/CarroEsportivo.js" type="module"></script>
-    <script src="js/models/Caminhao.js" type="module"></script>
-    <script src="js/previsao_tempo_script.js" type="module"></script>
-    <!-- O main.js DEVE SER O ÚLTIMO SCRIPT -->
-    <script src="js/main.js" type="module"></script>
+    
+    <!-- Modelos do Frontend (Classes que definem o comportamento dos veículos) -->
+    <script src="./js/models/Manutencao.js" type="module"></script>
+    <script src="./js/models/Veiculo.js" type="module"></script>
+    <script src="./js/models/Carro.js" type="module"></script>
+    <script src="./js/models/CarroEsportivo.js" type="module"></script>
+    <script src="./js/models/Caminhao.js" type="module"></script>
+    
+    <!-- Scripts das Telas -->
+    <script src="./js/previsao_tempo_script.js" type="module"></script>
+
+    <!-- O ARQUIVO PRINCIPAL, QUE USA TODOS OS OUTROS, DEVE SER O ÚLTIMO -->
+    <script src="./js/main.js" type="module"></script>
 
 </body>
 </html>
